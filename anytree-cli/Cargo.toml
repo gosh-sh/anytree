@@ -1,0 +1,18 @@
+[package]
+name = "anytree-cli"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+name = "anytree"
+path = "src/bin/anytree.rs"
+
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+anytree-sbom = { path = "../anytree-sbom/" }
+anytree-utils = { path = "../anytree-utils/" }
+clap = { version = "4.3", features = ["env", "derive"] }
