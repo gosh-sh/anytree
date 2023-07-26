@@ -4,7 +4,7 @@ use chrono::offset::Utc;
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CycloneDXBom {
     #[serde(rename = "bomFormat")]
     pub bom_format: String,
@@ -17,14 +17,14 @@ pub struct CycloneDXBom {
     pub components: Vec<Component>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Metadata {
     pub timestamp: DateTime<Utc>,
     pub tools: Vec<Tool>,
     pub component: Component,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Tool {
     pub vendor: String,
     pub name: String,
@@ -32,19 +32,19 @@ pub struct Tool {
     pub hashes: Vec<Hash>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Hash {
     pub alg: String,
     pub content: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Property {
     pub name: String,
     pub value: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Component {
     pub bom_ref: Option<String>,
     #[serde(rename = "type")]
@@ -57,7 +57,7 @@ pub struct Component {
     pub properties: Option<Vec<Property>>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ExternalReference {
     pub url: String,
     #[serde(rename = "type")]
