@@ -39,6 +39,12 @@ pub struct Hash {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct Property {
+    pub name: String,
+    pub value: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Component {
     pub bom_ref: Option<String>,
     #[serde(rename = "type")]
@@ -48,6 +54,7 @@ pub struct Component {
     pub purl: String,
     #[serde(rename = "externalReferences")]
     pub external_references: Option<Vec<ExternalReference>>,
+    pub properties: Option<Vec<Property>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

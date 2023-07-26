@@ -2,6 +2,7 @@
 members = [
     #
     "anytree-cli",
+    "anytree-plugin-cargo",
     "anytree-sbom",
     "anytree-utils",
 ]
