@@ -1,6 +1,7 @@
 mod constants;
 
 use std::fs::File;
+use std::hash::{Hash, Hasher, SipHasher};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -55,7 +56,9 @@ impl CargoGitComponent {
 
         let mut clone_dir = path.clone();
         clone_dir.push(DB_SUBFOLDER);
-        clone_dir.push(format!("{}-{}", name, DIR_SUFFIX));
+
+        let dir_suffix = get_suffix_hash(url);
+        clone_dir.push(format!("{}-{}", name, &dir_suffix));
 
         // Clone bare repo
         tracing::trace!("Cloning the bare repo. url: {}", &url);
@@ -83,7 +86,7 @@ impl CargoGitComponent {
 
         let mut checkout_dir = path.clone();
         checkout_dir.push(CHECKOUTS_SUBFOLDER);
-        checkout_dir.push(format!("{}-{}", name, DIR_SUFFIX));
+        checkout_dir.push(format!("{}-{}", name, &dir_suffix));
         let mut trimmed_commit = commit.clone();
         trimmed_commit.truncate(7);
         checkout_dir.push(trimmed_commit);
@@ -123,4 +126,12 @@ impl CargoGitComponent {
 
         Ok(())
     }
+}
+
+fn get_suffix_hash(url: &str) -> String {
+    let mut hasher = SipHasher::new();
+    let url = url.trim_end_matches(".git").to_lowercase();
+    url.hash(&mut hasher);
+    let res: u64 = hasher.finish();
+    hex::encode(res.to_le_bytes())
 }

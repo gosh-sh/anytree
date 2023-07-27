@@ -4,10 +4,6 @@ pub const CHECKOUTS_SUBFOLDER: &str = "checkouts";
 pub const REF_PATH: &str = "refs/remotes/origin";
 pub const REF_FILE_NAME: &str = "HEAD";
 
-// random constant to suffix dirs
-// TODO: change this const to something meaningful
-pub const DIR_SUFFIX: &str = "f9cb9f02e39b3874";
-
 pub const CACHE_DIR_TAG_NAME: &str = "CACHEDIR.TAG";
 
 pub const DEFAULT_CACHE_DIR_TAG: &str = "Signature: 8a477f597d28d172789f06886806bc55
