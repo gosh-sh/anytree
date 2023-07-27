@@ -12,6 +12,7 @@ pub struct CycloneDXBom {
     pub spec_version: String,
     #[serde(rename = "serialNumber")]
     pub serial_number: Option<String>,
+    // add default
     pub version: i32,
     pub metadata: Option<Metadata>,
     pub components: Vec<Component>,
@@ -19,17 +20,17 @@ pub struct CycloneDXBom {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Metadata {
-    pub timestamp: DateTime<Utc>,
-    pub tools: Vec<Tool>,
-    pub component: Component,
+    pub timestamp: Option<DateTime<Utc>>,
+    pub tools: Option<Vec<Tool>>, // vec of tool is deprecated in 1.5
+    pub component: Option<Component>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Tool {
-    pub vendor: String,
-    pub name: String,
-    pub version: String,
-    pub hashes: Vec<Hash>,
+    pub vendor: Option<String>,
+    pub name: Option<String>,
+    pub version: Option<String>,
+    pub hashes: Option<Vec<Hash>>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -44,7 +45,7 @@ pub struct Property {
     pub value: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ComponentType {
     #[serde(rename = "application")]
     Application,
@@ -75,6 +76,8 @@ pub struct Component {
     #[serde(rename = "externalReferences")]
     pub external_references: Option<Vec<ExternalReference>>,
     pub properties: Option<Vec<Property>>,
+    #[serde(rename = "mime-type")]
+    pub mime_type: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

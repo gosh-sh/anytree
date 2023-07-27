@@ -1,24 +1,25 @@
 mod constants;
 
-use crate::cargo_components::helper::{
-    convert_index_to_cache, get_component_properties, name_to_index_path,
-};
-use crate::cargo_components::registry::constants::*;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::sync::Once;
+
 use anytree_sbom::Component;
 
+use crate::cargo_components::helper::{convert_index_to_cache, name_to_index_path};
+use crate::cargo_components::registry::constants::*;
+
 static INIT: Once = Once::new();
-pub const LIBRARY_TYPE: &str = "rust/registry";
+pub const LIBRARY_TYPE: &str = "cargo/registry";
 
 pub struct CargoRegistryComponent {}
 
-fn init(cargo_cache_path: impl AsRef<Path>) {
+fn init(cargo_root: impl AsRef<Path>) {
+    tracing::trace!("Init cargo registry dir");
     // create default crates.io config
-    let mut index_path = PathBuf::from(cargo_cache_path.as_ref());
+    let mut index_path = PathBuf::from(cargo_root.as_ref());
     index_path.push(CARGO_REGISTRY_SUBFOLDER);
     index_path.push(REGISTRY_INDEX_CACHE_PREFIX);
     std::fs::create_dir_all(&index_path)
@@ -29,86 +30,113 @@ fn init(cargo_cache_path: impl AsRef<Path>) {
     let mut config_file = File::create(index_config_path.to_str().unwrap())
         .expect("Failed to create default cargo registry config");
     config_file
-        .write(DEFAULT_INDEX_CONFIG.as_bytes())
+        .write_all(DEFAULT_INDEX_CONFIG.as_bytes())
         .expect("Failed to write default cargo registry config");
 }
 
 impl CargoRegistryComponent {
-    pub fn save(
-        cargo_cache_path: &Path,
-        bom_component: &Component,
-    ) -> anyhow::Result<()> {
-        INIT.call_once(|| init(cargo_cache_path));
-        let mut path = PathBuf::from(cargo_cache_path);
+    pub fn save(cargo_root: &Path, component: &Component) -> anyhow::Result<()> {
+        tracing::trace!(
+            "Start save of registry component {}.{}",
+            component.name,
+            component.version
+        );
+        INIT.call_once(|| init(cargo_root));
+        let mut path = PathBuf::from(cargo_root);
         path.push(CARGO_REGISTRY_SUBFOLDER);
 
-        let name = format!(
-            "{}-{}",
-            bom_component.name.to_string(),
-            bom_component.version.to_string()
-        );
-        let properties = get_component_properties(bom_component)?;
-        let url = properties
-            .get("url")
-            .ok_or(anyhow::format_err!("Failed to get dependency URL"))?;
-        let commit = properties
-            .get("commit")
-            .ok_or(anyhow::format_err!("Failed to get dependency commit"))?;
-
-        // prepare dir for dependency source files
-        let mut src_path = path.clone();
-        src_path.push(REGISTRY_SRC_PREFIX);
-        src_path.push(&name);
-        std::fs::create_dir_all(&src_path)?;
+        let name = format!("{}-{}", component.name, component.version);
+        let url =
+            format!("{}{}/{}/download", CRATES_IO_DOWNLOAD_URL, component.name, component.version);
 
         // load dependency as archive with specified commit
         let mut cache_path = path.clone();
         cache_path.push(REGISTRY_CACHE_PREFIX);
         std::fs::create_dir_all(&cache_path)?;
-        let cache_dir = cache_path.to_str().unwrap();
+        let cache_dir = cache_path.clone();
+        let cache_dir = cache_dir.to_str().unwrap();
         let cache_name = format!("{name}.crate");
+        cache_path.push(&cache_name);
 
-
-        // TODO: replace registry
-        // registry.dump_commit(url, commit, &src_path).await?;
-
-
-        // convert index to cargo cache and save to file
-        let index_str = properties
-            .get("crates_io_index")
-            .ok_or(anyhow::format_err!("Failed to get dependency crate index"))?;
-        let mut index_path = path.clone();
-        index_path.push(REGISTRY_INDEX_CACHE_PREFIX);
-        index_path.push(name_to_index_path(&bom_component.name.to_string()));
-        let mut index_dir = index_path.clone();
-        index_dir.pop();
-        std::fs::create_dir_all(index_dir)?;
-        convert_index_to_cache(index_str, index_path)?;
-
-        // Cargo writes .cargo-ok file into src dir but mount in Dockerfile in read only
-        // so we create this file if it doesn't exist
-        let mut cargo_ok_path = src_path.clone();
-        cargo_ok_path.push(".cargo-ok");
-
-        if !cargo_ok_path.exists() {
-            let mut file = File::create(&cargo_ok_path)?;
-            file.write("ok".as_bytes())?;
+        // Download crate as archive
+        tracing::trace!("Downloading crate as an archive. url: {}", &url);
+        let status = Command::new("curl")
+            .arg("-L")
+            .arg(&url)
+            .arg("--output")
+            .arg(cache_name)
+            .current_dir(cache_dir)
+            .stderr(Stdio::piped())
+            .status()?;
+        if !status.success() {
+            anyhow::bail!("Failed to clone bare repo: {}", url);
         }
 
-        // archive the source directory
+        // prepare dir for dependency source files
+        let mut src_path = path.clone();
+        src_path.push(REGISTRY_SRC_PREFIX);
+        std::fs::create_dir_all(&src_path)?;
+
+        // tar -xzf itoa-1.0.8.crate -o itoa-1.0.8
+        // extract the source directory
+        tracing::trace!("Extracting the crate archive.");
         let mut src_dir = src_path.clone();
         src_dir.pop();
         let status = Command::new("tar")
-            .arg("-zcf")
-            .arg(cache_name)
-            .arg("--directory")
-            .arg(src_dir)
+            .arg("-xzf")
+            .arg(cache_path)
+            .arg("-o")
             .arg(&name)
-            .current_dir(cache_dir)
+            .current_dir(&src_path)
             .status()?;
         if !status.success() {
             anyhow::bail!("Failed to compress sources: {}", status);
         }
+
+        // Prepare index file
+        let mut index_path = path.clone();
+        index_path.push(REGISTRY_INDEX_CACHE_PREFIX);
+        index_path.push(name_to_index_path(&component.name.to_string()));
+        let mut index_dir = index_path.clone();
+        index_dir.pop();
+        std::fs::create_dir_all(index_dir)?;
+        let indexed_name = name_to_index_path(&component.name);
+        let index_url = format!("{}{}", CRATE_INDEX_URL, indexed_name,);
+        // Download index file
+        tracing::trace!("Downloading the index. url: {}", index_url);
+        let status =
+            Command::new("curl").arg("-L").arg(index_url).stderr(Stdio::piped()).output()?;
+        if !status.status.success() {
+            anyhow::bail!("Failed to clone bare repo: {}", url);
+        }
+        let mut index_str = None;
+        let lines = std::str::from_utf8(status.stdout.as_slice())?;
+        for line in lines.split('\n') {
+            if line.contains(&component.version) {
+                index_str = Some(line.to_string());
+            }
+        }
+        let index_str = match index_str {
+            Some(s) => s,
+            None => {
+                anyhow::bail!("Failed to get index for specified version");
+            }
+        };
+        // convert index to cargo cache and save to file
+        convert_index_to_cache(&index_str, index_path)?;
+
+        // Cargo writes .cargo-ok file into src dir but mount in Dockerfile in read only
+        // so we create this file if it doesn't exist
+        let mut cargo_ok_path = src_path.clone();
+        cargo_ok_path.push(&name);
+        cargo_ok_path.push(".cargo-ok");
+
+        if !cargo_ok_path.exists() {
+            tracing::trace!("Adding cargo-ok to {:?}.", cargo_ok_path);
+            let mut file = File::create(&cargo_ok_path)?;
+            file.write_all("ok".as_bytes())?;
+        }
+
         Ok(())
     }
 }

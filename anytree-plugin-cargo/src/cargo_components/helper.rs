@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fs::File;
-
 use std::io::Write;
 use std::path::Path;
+
 use anytree_sbom::Component;
 
 // https://doc.rust-lang.org/cargo/reference/registry-index.html#index-files
@@ -24,11 +24,8 @@ pub fn name_to_index_path(crate_name: &str) -> String {
             format!("3/{}/{}", first_char, crate_name)
         }
         _ => {
-            let mut header_iter = crate_name
-                .clone()
-                .as_bytes()
-                .chunks(2)
-                .map(|a| String::from_utf8_lossy(a));
+            let mut header_iter =
+                crate_name.clone().as_bytes().chunks(2).map(String::from_utf8_lossy);
             format!(
                 "{}/{}/{}",
                 header_iter.next().unwrap(),
@@ -55,7 +52,7 @@ pub fn convert_index_to_cache(
 
     // in real cache then go list of all versions followed by this version index
     // but we store only one version we use with index obtained from SBOM
-    let object: serde_json::Value = serde_json::from_str(&index_str)?;
+    let object: serde_json::Value = serde_json::from_str(index_str)?;
     let version = object.as_object().unwrap()["vers"].as_str().unwrap();
     res_bytes.append(&mut version.as_bytes().to_vec());
     res_bytes.push(0);
@@ -64,7 +61,7 @@ pub fn convert_index_to_cache(
 
     // Save to the file
     let mut ofile = File::create(output_path)?;
-    ofile.write(res_bytes.as_slice())?;
+    ofile.write_all(res_bytes.as_slice())?;
     Ok(())
 }
 

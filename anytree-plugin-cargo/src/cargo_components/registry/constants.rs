@@ -10,3 +10,5 @@ pub const DEFAULT_INDEX_CONFIG: &str = "{
 }";
 
 pub const CARGO_REGISTRY_SUBFOLDER: &str = "registry";
+pub const CRATES_IO_DOWNLOAD_URL: &str = "https://crates.io/api/v1/crates/";
+pub const CRATE_INDEX_URL: &str = "https://github.com/rust-lang/crates.io-index/raw/master/";
