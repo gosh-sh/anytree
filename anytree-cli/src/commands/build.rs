@@ -21,7 +21,7 @@ pub fn build(sbom_path: impl AsRef<Path>) -> anyhow::Result<()> {
         tracing::info!(?component, "Building component");
     }
 
-    tracing::info!("Metadata: {}", sbom.metadata.unwrap().timestamp.to_rfc2822());
+    tracing::info!("Metadata: {}", sbom.metadata.unwrap().timestamp.unwrap().to_rfc2822());
     tracing::info!(?docker_cmd, "Running docker command");
 
     let output = docker_cmd.output()?;

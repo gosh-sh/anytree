@@ -5,14 +5,17 @@ use std::path::Path;
 
 use anytree_sbom::Component;
 
-// https://doc.rust-lang.org/cargo/reference/registry-index.html#index-files
-// Packages with 1 character names are placed in a directory named 1.
-// Packages with 2 character names are placed in a directory named 2.
-// Packages with 3 character names are placed in the directory 3/{first-character} where
-//   {first-character} is the first character of the package name.
-// All other packages are stored in directories named {first-two}/{second-two} where the top directory
-//   is the first two characters of the package name, and the next subdirectory is the third and fourth
-//   characters of the package name. For example, cargo would be stored in a file named ca/rg/cargo.
+/// https://doc.rust-lang.org/cargo/reference/registry-index.html#index-files
+/// Packages with 1 character names are placed in a directory named 1.
+/// Packages with 2 character names are placed in a directory named 2.
+/// Packages with 3 character names are placed in the directory
+///   3/{first-character} where {first-character} is the first character of the
+///   package name.
+/// All other packages are stored in directories named
+///   {first-two}/{second-two} where the top directory is the first two
+///   characters of the package name, and the next subdirectory is the third and
+///   fourth characters of the package name. For example, cargo would be stored
+///   in a file named ca/rg/cargo.
 pub fn name_to_index_path(crate_name: &str) -> String {
     match crate_name.len() {
         0 => panic!("crate name can't be empty"),

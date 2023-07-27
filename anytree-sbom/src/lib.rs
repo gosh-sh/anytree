@@ -89,8 +89,6 @@ pub struct ExternalReference {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::error::Category;
-
     use super::*;
 
     #[test]
