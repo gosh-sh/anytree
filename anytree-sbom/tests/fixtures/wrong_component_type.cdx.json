@@ -1,0 +1,36 @@
+{
+    "bomFormat": "CycloneDX",
+    "specVersion": "1.2",
+    "serialNumber": "urn:uuid:2392d49c-ea93-44e0-aa36-5923fcfb5efb",
+    "version": 1,
+    "components": [
+        {
+            "type": "WRONG_TYPE",
+            "bom-ref": "pkg:golang/github.com/0xAX/notificator@v0.0.0-20191016112426-3962a5ea8da1",
+            "name": "github.com/0xAX/notificator",
+            "version": "v0.0.0-20191016112426-3962a5ea8da1",
+            "scope": "required",
+            "hashes": [
+                {
+                    "alg": "SHA-256",
+                    "content": "8fd1da69f6a90db3db1910e4bba7bf1d1b3a28131c287896726d7ff526f19e5e"
+                }
+            ],
+            "licenses": [
+                {
+                    "license": {
+                        "id": "BSD-3-Clause",
+                        "url": "https://spdx.org/licenses/BSD-3-Clause.html"
+                    }
+                }
+            ],
+            "purl": "pkg:golang/github.com/0xAX/notificator@v0.0.0-20191016112426-3962a5ea8da1",
+            "externalReferences": [
+                {
+                    "url": "https://github.com/0xAX/notificator",
+                    "type": "vcs"
+                }
+            ]
+        }
+    ]
+}

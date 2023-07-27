@@ -44,11 +44,31 @@ pub struct Property {
     pub value: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ComponentType {
+    #[serde(rename = "application")]
+    Application,
+    #[serde(rename = "framework")]
+    Framework,
+    #[serde(rename = "library")]
+    Library,
+    #[serde(rename = "container")]
+    Container,
+    #[serde(rename = "operating-system")]
+    OperatingSystem,
+    #[serde(rename = "device")]
+    Device,
+    #[serde(rename = "firmware")]
+    Firmware,
+    #[serde(rename = "file")]
+    File,
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Component {
     pub bom_ref: Option<String>,
     #[serde(rename = "type")]
-    pub component_type: String,
+    pub component_type: ComponentType,
     pub name: String,
     pub version: String,
     pub purl: String,
@@ -66,14 +86,27 @@ pub struct ExternalReference {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::error::Category;
+
     use super::*;
 
     #[test]
-    fn test_bom() {
-        let sbom_file = include_str!("../tests/fixtures/proton-bridge-v1.6.3.bom.json");
-        let sbom: CycloneDXBom = serde_json::from_reader(sbom_file.as_bytes()).unwrap();
+    fn test_optimistic_bom() {
+        let json = include_bytes!("../tests/fixtures/proton-bridge-v1.6.3.cdx.json");
+        let sbom = serde_json::from_slice::<CycloneDXBom>(json).unwrap();
 
         assert_eq!(sbom.bom_format, "CycloneDX");
         assert_eq!(sbom.components.first().unwrap().external_references.as_ref().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_wrong_type_should_fail() {
+        let json = include_bytes!("../tests/fixtures/wrong_component_type.cdx.json");
+
+        let Err(err) = serde_json::from_slice::<CycloneDXBom>(json) else {
+            panic!("Expected wrong type error")
+        };
+
+        assert!(err.is_data());
     }
 }
