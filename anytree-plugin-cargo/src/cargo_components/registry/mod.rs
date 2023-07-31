@@ -8,7 +8,11 @@ use std::sync::Once;
 
 use anytree_sbom::Component;
 
-use crate::cargo_components::helper::{convert_index_to_cache, name_to_index_path};
+use crate::cargo_components::hash::check_hashes;
+use crate::cargo_components::helper::SourceKind::SparseRegistry;
+use crate::cargo_components::helper::{
+    convert_index_to_cache, get_suffix_hash, name_to_index_path,
+};
 use crate::cargo_components::registry::constants::*;
 
 static INIT: Once = Once::new();
@@ -21,7 +25,9 @@ fn init(cargo_root: impl AsRef<Path>) {
     // create default crates.io config
     let mut index_path = PathBuf::from(cargo_root.as_ref());
     index_path.push(CARGO_REGISTRY_SUBFOLDER);
-    index_path.push(REGISTRY_INDEX_CACHE_PREFIX);
+    index_path.push(CARGO_INDEX_SUBFOLDER);
+    index_path.push(get_registry_path());
+    index_path.push(CARGO_INDEX_CACHE_SUBFOLDER);
     std::fs::create_dir_all(&index_path)
         .expect("Failed to create directory for cargo crates registry");
     let mut index_config_path = index_path.clone();
@@ -34,24 +40,40 @@ fn init(cargo_root: impl AsRef<Path>) {
         .expect("Failed to write default cargo registry config");
 }
 
+fn get_registry_path() -> String {
+    format!(
+        "{}-{}",
+        CARGO_REGISTRY_PREFIX,
+        get_suffix_hash(CARGO_REGISTRY_URL, Some(SparseRegistry))
+    )
+}
+
 impl CargoRegistryComponent {
     pub fn save(cargo_root: &Path, component: &Component) -> anyhow::Result<()> {
-        tracing::trace!(
-            "Start save of registry component {}.{}",
-            component.name,
-            component.version
-        );
+        let version = component
+            .version
+            .as_ref()
+            .ok_or(anyhow::format_err!("Component {} does not contain version", component.name))?;
+        tracing::trace!("Start save of registry component {}.{}", component.name, version,);
         INIT.call_once(|| init(cargo_root));
         let mut path = PathBuf::from(cargo_root);
         path.push(CARGO_REGISTRY_SUBFOLDER);
 
-        let name = format!("{}-{}", component.name, component.version);
-        let url =
-            format!("{}{}/{}/download", CRATES_IO_DOWNLOAD_URL, component.name, component.version);
+        let name = format!("{}-{}", component.name, version);
+        let url = &component
+            .external_references
+            .as_ref()
+            .and_then(|ext_refs| ext_refs.get(0))
+            .map(|reference| reference.url.as_str())
+            .ok_or(anyhow::format_err!(
+                "Component {} does not contain external references",
+                component.name
+            ))?;
 
         // load dependency as archive with specified commit
         let mut cache_path = path.clone();
-        cache_path.push(REGISTRY_CACHE_PREFIX);
+        cache_path.push(CARGO_CACHE_SUBFOLDER);
+        cache_path.push(get_registry_path());
         std::fs::create_dir_all(&cache_path)?;
         let cache_dir = cache_path.clone();
         let cache_dir = cache_dir.to_str().unwrap();
@@ -62,7 +84,7 @@ impl CargoRegistryComponent {
         tracing::trace!("Downloading crate as an archive. url: {}", &url);
         let status = Command::new("curl")
             .arg("-L")
-            .arg(&url)
+            .arg(url)
             .arg("--output")
             .arg(cache_name)
             .current_dir(cache_dir)
@@ -72,9 +94,15 @@ impl CargoRegistryComponent {
             anyhow::bail!("Failed to clone bare repo: {}", url);
         }
 
+        if let Some(hashes) = &component.hashes {
+            let data = std::fs::read(&cache_path)?;
+            check_hashes(hashes, data)?;
+        }
+
         // prepare dir for dependency source files
         let mut src_path = path.clone();
-        src_path.push(REGISTRY_SRC_PREFIX);
+        src_path.push(CARGO_SRC_SUBFOLDER);
+        src_path.push(get_registry_path());
         std::fs::create_dir_all(&src_path)?;
 
         // tar -xzf itoa-1.0.8.crate -o itoa-1.0.8
@@ -95,7 +123,9 @@ impl CargoRegistryComponent {
 
         // Prepare index file
         let mut index_path = path.clone();
-        index_path.push(REGISTRY_INDEX_CACHE_PREFIX);
+        index_path.push(CARGO_INDEX_SUBFOLDER);
+        index_path.push(get_registry_path());
+        index_path.push(CARGO_INDEX_CACHE_SUBFOLDER);
         index_path.push(name_to_index_path(&component.name.to_string()));
         let mut index_dir = index_path.clone();
         index_dir.pop();
@@ -112,7 +142,7 @@ impl CargoRegistryComponent {
         let mut index_str = None;
         let lines = std::str::from_utf8(status.stdout.as_slice())?;
         for line in lines.split('\n') {
-            if line.contains(&component.version) {
+            if line.contains(version) {
                 index_str = Some(line.to_string());
             }
         }
@@ -129,12 +159,12 @@ impl CargoRegistryComponent {
         // so we create this file if it doesn't exist
         let mut cargo_ok_path = src_path.clone();
         cargo_ok_path.push(&name);
-        cargo_ok_path.push(".cargo-ok");
+        cargo_ok_path.push(CARGO_OK_FILE_NAME);
 
         if !cargo_ok_path.exists() {
             tracing::trace!("Adding cargo-ok to {:?}.", cargo_ok_path);
             let mut file = File::create(&cargo_ok_path)?;
-            file.write_all("ok".as_bytes())?;
+            file.write_all(CARGO_OK_CONTENT.as_bytes())?;
         }
 
         Ok(())

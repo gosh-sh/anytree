@@ -1,0 +1,248 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "GOSH",
+        "name": "anytree",
+        "version": "0.0.0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "anytree_test_project_0_1_0_1ec33adb-c5b6-4a61-9b01-bf455ac731d6",
+      "type": "container",
+      "mime-type": "Docker",
+      "name": "anytree_test_project",
+      "version": "0.1.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/SilkovAlexander/anytree_test_project.git",
+          "type": "distribution"
+        }
+      ],
+      "properties": [
+        {
+          "name": "commit",
+          "value": "b94925dc38379623c9f32859e4c3b4cd037b86c1"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "66c3d463accb425b2a33237122e932c2"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "dbcc3aa7fd6c4ef96fee54ccc75a8b2eb55d2fac"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "38961fddc5773f00141d3a930f167f2a88b4669409b6f8ec694d2f32a37e3d42"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "9605ff6ed052d0b62c05ba8e44b9ec3c8874d6b882e8c077fa2e054626ec8d4fd97a74835edb79f0934e10634e1eb8cb6f7d619a2f7e8b8d3756f22a62d3f609"
+        }
+      ]
+    },
+    {
+      "bom-ref": "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+      "type": "library",
+      "name": "simple_lib",
+      "version": "0.1.0",
+      "mime-type": "cargo/git",
+      "externalReferences": [
+        {
+          "url": "https://github.com/SilkovAlexander/simple_lib.git",
+          "type": "distribution"
+        }
+      ],
+      "properties": [
+        {
+          "name": "commit",
+          "value": "09885b45ddb9044d7a6a2414c45d1bea7c475883"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "53ee337a81165f8c7b238bb140c61767"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "9f52a32e75595e67d264d661db7262b0e0af86df"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "620612b49432a46eb193297ad39d6688f3b732dd8968d02ddbfbb62cd01abad6"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "3206ffe843b197e983a0a81a409762932aa2e51d15b055650e7ee4ec1ae394d96dd6716b1f5b846fe7f44cd994292bb73f9eeed7b5acfc2cc59f659b24b12fcf"
+        }
+      ]
+    },
+    {
+      "bom-ref": "serde_json_1_0_100_909af2e7-7f58-46e4-b058-e9468420b88c",
+      "type": "library",
+      "name": "serde_json",
+      "version": "1.0.100",
+      "mime-type": "cargo/registry",
+      "externalReferences": [
+        {
+          "url": "https://crates.io/api/v1/crates/serde_json/1.0.100/download",
+          "type": "distribution"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "8a97c9b4c4517ee5f2b4b8136a386158"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "ce899c781e91361744432091e6eae7dd3d6b300a"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "0f1e14e89be7aa4c4b78bdbdc9eb5bf8517829a600ae8eaa39a6e1d960b5185c"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "182b0a2c77a7c06d0c88e629acd56b16e50bdecac2a066d2b6a3a2a41b50dd6bb147e943df7eb3e26c2b7a99f656f1af98e8c2a83d991c5356b46f3573b94b88"
+        }
+      ]
+    },
+    {
+      "bom-ref": "itoa_1_0_8_13999eef-6e46-43ec-ab92-0650d219fe91",
+      "type": "library",
+      "name": "itoa",
+      "version": "1.0.8",
+      "mime-type": "cargo/registry",
+      "externalReferences": [
+        {
+          "url": "https://crates.io/api/v1/crates/itoa/1.0.8/download",
+          "type": "distribution"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "1d9b12d6bb943bb319c9124ccd6ca2e1"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "cd0b41df28fc7b5983b41f4f3820ef92fbbf69d5"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "62b02a5381cc465bd3041d84623d0fa3b66738b52b8e2fc3bab8ad63ab032f4a"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "6171bfcd70634a2587740c145a15790e12807d2c756a25e74950daf9dd36acc662f12836c5b87e20483b4d020bc0d98a352b8e9787b0b8544bf1ee1b6a0c2c8e"
+        }
+      ]
+    },
+    {
+      "bom-ref": "ryu_1_0_14_adad57c3-35a0-4a10-bdd8-fdeb217f9d6e",
+      "type": "library",
+      "name": "ryu",
+      "version": "1.0.14",
+      "mime-type": "cargo/registry",
+      "externalReferences": [
+        {
+          "url": "https://crates.io/api/v1/crates/ryu/1.0.14/download",
+          "type": "distribution"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "2dbc8ae5544c39f825ff8b6b945c3f33"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "eef775f0062389c8553428026638778e61d67461"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "fe232bdf6be8c8de797b22184ee71118d63780ea42ac85b61d1baa6d3b782ae9"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "9832c760d1ac674ba362639968962928971231d696e450738045ca36ae2780116ad865b2bdd96e36f14d8f92e12107dc8b75be90c74d76e3bb834a94bd6e5599"
+        }
+      ]
+    },
+    {
+      "bom-ref": "serde_1_0_171_0224b260-14f0-42d1-bd3b-2fef914dc198",
+      "type": "library",
+      "name": "serde",
+      "version": "1.0.171",
+      "mime-type": "cargo/registry",
+      "externalReferences": [
+        {
+          "url": "https://crates.io/api/v1/crates/serde/1.0.171/download",
+          "type": "distribution"
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "ac637702c418e8243eb21a81ff036cea"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "436ae77f6f36642eaee1fc8e7fbaa056accbd88a"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "30e27d1e4fd7659406c492fd6cfaf2066ba8773de45ca75e855590f856dc34a9"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "c8db09da8845e102e209276d5747a28d2e7b12ab5297d24156062c61c6ac8aaac8789d6e91a4f939d1f674375d8c3d3d1e372dd248baf63fece3740ea6f68bce"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "anytree_test_project_0_1_0_1ec33adb-c5b6-4a61-9b01-bf455ac731d6",
+      "dependsOn": [
+        "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+        "serde_json_1_0_100_909af2e7-7f58-46e4-b058-e9468420b88c"
+      ]
+    },
+    {
+      "ref": "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+      "dependsOn": []
+    },
+    {
+      "ref": "serde_json_1_0_100_909af2e7-7f58-46e4-b058-e9468420b88c",
+      "dependsOn": [
+        "itoa_1_0_8_13999eef-6e46-43ec-ab92-0650d219fe91",
+        "ryu_1_0_14_adad57c3-35a0-4a10-bdd8-fdeb217f9d6e",
+        "serde_1_0_171_0224b260-14f0-42d1-bd3b-2fef914dc198"
+      ]
+    },
+    {
+      "ref": "itoa_1_0_8_13999eef-6e46-43ec-ab92-0650d219fe91",
+      "dependsOn": []
+    },
+    {
+      "ref": "ryu_1_0_14_adad57c3-35a0-4a10-bdd8-fdeb217f9d6e",
+      "dependsOn": []
+    },
+    {
+      "ref": "serde_1_0_171_0224b260-14f0-42d1-bd3b-2fef914dc198",
+      "dependsOn": []
+    }
+  ]
+}

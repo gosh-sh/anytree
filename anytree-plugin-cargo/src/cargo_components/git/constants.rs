@@ -3,6 +3,7 @@ pub const DB_SUBFOLDER: &str = "db";
 pub const CHECKOUTS_SUBFOLDER: &str = "checkouts";
 pub const REF_PATH: &str = "refs/remotes/origin";
 pub const REF_FILE_NAME: &str = "HEAD";
+pub const CARGO_OK_FILE_NAME: &str = ".cargo-ok";
 
 pub const CACHE_DIR_TAG_NAME: &str = "CACHEDIR.TAG";
 

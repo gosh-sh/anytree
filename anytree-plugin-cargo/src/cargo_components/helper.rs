@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
+use std::hash::{Hash, Hasher, SipHasher};
 use std::io::Write;
 use std::path::Path;
 
@@ -79,6 +80,37 @@ pub fn get_component_properties(component: &Component) -> anyhow::Result<HashMap
     Ok(result)
 }
 
+/// Slightly trimmed struct from cargo
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum SourceKind {
+    /// A git repository.
+    _Git, // This variant was simplified for not to add extra structs
+    /// A local path.
+    _Path,
+    /// A remote registry.
+    _Registry,
+    /// A sparse registry.
+    SparseRegistry,
+    /// A local filesystem-based registry.
+    _LocalRegistry,
+    /// A directory-based registry.
+    _Directory,
+}
+
+// The simplified mechanism how cargo obtains hash of the git url to calculate
+// dir suffix
+pub fn get_suffix_hash(url: &str, kind: Option<SourceKind>) -> String {
+    // NOTE: SipHasher is deprecated, but cargo seems to check this hash !!!!
+    let mut hasher = SipHasher::new();
+    if let Some(kind) = kind {
+        kind.hash(&mut hasher);
+    }
+    let url = url.trim_end_matches(".git").to_lowercase();
+    url.hash(&mut hasher);
+    let res: u64 = hasher.finish();
+    hex::encode(res.to_le_bytes())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -89,5 +121,24 @@ mod tests {
         assert_eq!("2/aa", name_to_index_path("aa"));
         assert_eq!("3/r/ryu", name_to_index_path("ryu"));
         assert_eq!("se/rd/serde", name_to_index_path("serde"));
+    }
+
+    #[test]
+    fn test_suffix() {
+        assert_eq!(
+            "1ecc6299db9ec823",
+            get_suffix_hash(
+                "https://github.com/rust-lang/crates.io-index",
+                Some(SourceKind::_Registry)
+            )
+        );
+        assert_eq!(
+            "6f17d22bba15001f",
+            get_suffix_hash("sparse+https://index.crates.io/", Some(SourceKind::SparseRegistry))
+        );
+        assert_eq!(
+            "f9cb9f02e39b3874",
+            get_suffix_hash("https://github.com/silkovalexander/simple_lib", None)
+        );
     }
 }

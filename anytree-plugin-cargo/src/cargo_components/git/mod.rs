@@ -1,7 +1,6 @@
 mod constants;
 
 use std::fs::File;
-use std::hash::{Hash, Hasher, SipHasher};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -10,7 +9,8 @@ use std::sync::Once;
 use anytree_sbom::Component;
 
 use crate::cargo_components::git::constants::*;
-use crate::cargo_components::helper::get_component_properties;
+use crate::cargo_components::hash::check_hashes;
+use crate::cargo_components::helper::{get_component_properties, get_suffix_hash};
 
 static INIT: Once = Once::new();
 pub const LIBRARY_TYPE: &str = "cargo/git";
@@ -33,11 +33,7 @@ fn init(cargo_root: impl AsRef<Path>) {
 
 impl CargoGitComponent {
     pub fn save(cargo_root: &Path, component: &Component) -> anyhow::Result<()> {
-        tracing::trace!(
-            "Start save of cargo git component {}.{}",
-            component.name,
-            component.version
-        );
+        tracing::trace!("Start save of cargo git component {}", component.name,);
         INIT.call_once(|| init(cargo_root));
         let mut path = PathBuf::from(cargo_root);
         path.push(CARGO_GIT_SUBFOLDER);
@@ -57,7 +53,7 @@ impl CargoGitComponent {
         let mut clone_dir = path.clone();
         clone_dir.push(DB_SUBFOLDER);
 
-        let dir_suffix = get_suffix_hash(url);
+        let dir_suffix = get_suffix_hash(url, None);
         clone_dir.push(format!("{}-{}", name, &dir_suffix));
 
         // Clone bare repo
@@ -72,6 +68,12 @@ impl CargoGitComponent {
 
         if !status.success() {
             anyhow::bail!("Failed to clone bare repo: {}", url);
+        }
+
+        // check hashes if specified in SBOM
+        if let Some(hashes) = &component.hashes {
+            let data = git_archive(&clone_dir, commit)?;
+            check_hashes(hashes, data)?;
         }
 
         // Simple bare clone is not enough for cargo install need to stare ref
@@ -118,7 +120,7 @@ impl CargoGitComponent {
             anyhow::bail!("Failed to checkout commit: {} in {:?}", commit, checkout_dir);
         }
 
-        checkout_dir.push(".cargo-ok");
+        checkout_dir.push(CARGO_OK_FILE_NAME);
         if !checkout_dir.exists() {
             tracing::trace!("Create a cargo-ok file: {:?}", &checkout_dir);
             File::create(&checkout_dir)?;
@@ -128,10 +130,15 @@ impl CargoGitComponent {
     }
 }
 
-fn get_suffix_hash(url: &str) -> String {
-    let mut hasher = SipHasher::new();
-    let url = url.trim_end_matches(".git").to_lowercase();
-    url.hash(&mut hasher);
-    let res: u64 = hasher.finish();
-    hex::encode(res.to_le_bytes())
+pub fn git_archive(repo: impl AsRef<Path>, commit: impl AsRef<str>) -> anyhow::Result<Vec<u8>> {
+    let git_archive_output = Command::new("git")
+        .arg("archive")
+        .arg("--format=tar")
+        .arg(commit.as_ref())
+        .current_dir(repo.as_ref())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()?;
+
+    Ok(git_archive_output.stdout)
 }

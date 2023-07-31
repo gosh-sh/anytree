@@ -71,13 +71,14 @@ pub struct Component {
     #[serde(rename = "type")]
     pub component_type: ComponentType,
     pub name: String,
-    pub version: String,
-    pub purl: String,
+    pub version: Option<String>,
+    pub purl: Option<String>,
     #[serde(rename = "externalReferences")]
     pub external_references: Option<Vec<ExternalReference>>,
     pub properties: Option<Vec<Property>>,
     #[serde(rename = "mime-type")]
-    pub mime_type: String,
+    pub mime_type: Option<String>,
+    pub hashes: Option<Vec<Hash>>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
