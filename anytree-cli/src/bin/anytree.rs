@@ -25,7 +25,8 @@ fn run() -> anyhow::Result<()> {
                 anyhow::bail!("{sbom:?} does not exist");
             }
 
-            anytree_cli::commands::build::build(sbom)?;
+            // TODO: cache
+            anytree_cli::commands::build::build(sbom, false)?;
         }
     }
 

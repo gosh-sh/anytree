@@ -86,9 +86,11 @@ name = "anytree-cli"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "anytree-plugin-cargo",
  "anytree-sbom",
  "anytree-utils",
  "clap",
+ "dirs",
  "serde_json",
  "tracing",
  "uuid",

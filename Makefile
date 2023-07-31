@@ -15,3 +15,7 @@ fmt:
 .PHONY: fix
 fix:
 	cargo clippy --fix --allow-dirty
+
+.PHONY: run
+run:
+	cargo run --bin anytree -- build "./hack/sbom.spdx.json"
