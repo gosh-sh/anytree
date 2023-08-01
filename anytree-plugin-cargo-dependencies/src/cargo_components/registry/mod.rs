@@ -54,7 +54,7 @@ impl CargoRegistryComponent {
             .version
             .as_ref()
             .ok_or(anyhow::format_err!("Component {} does not contain version", component.name))?;
-        tracing::trace!("Start save of registry component {}.{}", component.name, version,);
+        tracing::info!("Loading cargo registry component {}.{}", component.name, version,);
         INIT.call_once(|| init(cargo_root));
         let mut path = PathBuf::from(cargo_root);
         path.push(CARGO_REGISTRY_SUBFOLDER);

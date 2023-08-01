@@ -32,6 +32,10 @@
         {
           "name": "target",
           "value": "cargo/project"
+        },
+        {
+          "name": "result",
+          "value": "anytree-test-project"
         }
       ],
       "hashes": [

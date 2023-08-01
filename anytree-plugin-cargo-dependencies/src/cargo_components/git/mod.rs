@@ -33,7 +33,7 @@ fn init(cargo_root: impl AsRef<Path>) {
 
 impl CargoGitComponent {
     pub fn save(cargo_root: &Path, component: &Component) -> anyhow::Result<()> {
-        tracing::trace!("Start save of cargo git component {}", component.name,);
+        tracing::info!("Loading cargo git component {}", component.name,);
         INIT.call_once(|| init(cargo_root));
         let mut path = PathBuf::from(cargo_root);
         path.push(CARGO_GIT_SUBFOLDER);

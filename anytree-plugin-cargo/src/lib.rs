@@ -14,7 +14,6 @@ const TARGET_DIR: &str = "target";
 
 const CONTAINER_PROJECT_DIR: &str = "/tmp/proj/";
 const CONTAINER_REGISTRY_ROOT: &str = "/usr/local/cargo/";
-const CONTAINER_TARGET_DIR: &str = "/tmp/target/";
 
 const CONTAINER_BASE: &str = "rust:1.71";
 
@@ -85,24 +84,13 @@ pub fn build(
         });
     }
 
-    // mount target dir
-    let mut target_dir = PathBuf::from(run_dir.as_ref());
-    target_dir.push(TARGET_DIR);
-    std::fs::create_dir_all(&target_dir)?;
-    docker_cmd.arg("--mount").arg({
-        let mut s = OsString::from("type=bind,source=");
-        s.push(target_dir.into_os_string());
-        s.push(",target=");
-        s.push(CONTAINER_TARGET_DIR);
-        s
-    });
-
     docker_cmd.arg("--workdir").arg(CONTAINER_PROJECT_DIR);
     docker_cmd.arg(CONTAINER_BASE);
     docker_cmd.arg("sh").arg("-c");
 
-    let build_cmd =
-        format!("cargo build --offline --release --target-dir {}", CONTAINER_TARGET_DIR);
+    // By default build with standard command.
+    // TODO: add ability to specify build command in config
+    let build_cmd = "cargo build --offline --release".to_string();
     docker_cmd.arg(build_cmd);
 
     docker_cmd.stdout(Stdio::piped());
@@ -125,15 +113,32 @@ pub fn build(
         anyhow::bail!("docker command failed: {}", res.code().unwrap_or(-1));
     }
 
-    // let mut docker_cp = Command::new("docker");
-    // docker_cp.arg("cp");
+    let artifact_name = &project
+        .properties
+        .as_ref()
+        .and_then(|properties| properties.iter().find(|property| property.name == "result"))
+        .ok_or(anyhow::format_err!("Failed to get artifact name for component: {}", project.name))?
+        .value;
 
-    // let container_path = format!("{}:{}", container_name, "/tmp/proj/target");
-    // docker_cp.arg(container_path);
-    // docker_cp.arg(&target_dir);
-    // tracing::trace!(?docker_cp, "Running docker command");
-    //
-    // eprintln!("CP Status: {:?}", docker_cp.status()?);
+    let mut docker_cp = Command::new("docker");
+    docker_cp.arg("cp");
+
+    let mut container_path = OsString::from(container_name);
+    container_path.push(":");
+    container_path.push(CONTAINER_PROJECT_DIR);
+    container_path.push("/target/release/");
+    container_path.push(artifact_name);
+
+    tracing::trace!("Container artifact path: {:?}", container_path);
+
+    docker_cp.arg(container_path);
+    docker_cp.arg(&target_dir);
+    tracing::trace!(?docker_cp, "Running docker command");
+
+    let res = docker_cp.status()?;
+    if !res.success() {
+        anyhow::bail!("docker command failed: {}", res.code().unwrap_or(-1));
+    }
 
     Ok(())
 }
@@ -155,6 +160,7 @@ fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::R
 
     tracing::info!("Checking out project {url}#{commit}");
 
+    // Clone the repo
     if !Command::new("git")
         .arg("clone")
         .arg(url)
@@ -168,7 +174,7 @@ fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::R
         anyhow::bail!("Failed to clone repo: {url}");
     }
 
-    // checkout status is usually not success but it works
+    // checkout commit specified in SBOM, do not delete
     // TODO: check status
     Command::new("git")
         .arg("checkout")
@@ -179,6 +185,7 @@ fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::R
         .status()?;
 
     if let Some(hashes) = &project.hashes {
+        // To check hash get archive bytes of the repo
         let git_archive_data = Command::new("git")
             .arg("archive")
             .arg("--format=tar")
