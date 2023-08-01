@@ -1,5 +1,4 @@
 use std::ffi::{OsStr, OsString};
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::vec;
@@ -47,7 +46,7 @@ pub fn build(
     docker_cmd.arg("run");
     docker_cmd.arg("-t");
     docker_cmd.arg("--network").arg("none");
-    docker_cmd.arg("--name").arg(&container_name);
+    docker_cmd.arg("--name").arg(container_name);
 
     // mount project dir
     docker_cmd.arg("--mount").arg({
