@@ -113,12 +113,14 @@ pub fn build(
         anyhow::bail!("docker command failed: {}", res.code().unwrap_or(-1));
     }
 
-    let artifact_name = &project
-        .properties
-        .as_ref()
-        .and_then(|properties| properties.iter().find(|property| property.name == "result"))
-        .ok_or(anyhow::format_err!("Failed to get artifact name for component: {}", project.name))?
-        .value;
+    let (artifact_name, artifact_hashes) = if let Some(component) =
+        &sbom.metadata.as_ref().and_then(|metadata| metadata.component.as_ref())
+    {
+        (component.name.clone(), component.hashes.clone())
+    } else {
+        // TODO: load name from Cargo.toml
+        ("name".to_string(), None)
+    };
 
     let mut docker_cp = Command::new("docker");
     docker_cp.arg("cp");
@@ -126,8 +128,8 @@ pub fn build(
     let mut container_path = OsString::from(container_name);
     container_path.push(":");
     container_path.push(CONTAINER_PROJECT_DIR);
-    container_path.push("/target/release/");
-    container_path.push(artifact_name);
+    container_path.push("target/release/");
+    container_path.push(&artifact_name);
 
     tracing::trace!("Container artifact path: {:?}", container_path);
 
@@ -138,6 +140,14 @@ pub fn build(
     let res = docker_cp.status()?;
     if !res.success() {
         anyhow::bail!("docker command failed: {}", res.code().unwrap_or(-1));
+    }
+
+    if let Some(hashes) = artifact_hashes {
+        tracing::info!("Check hash of the artifact");
+        target_dir.push(&artifact_name);
+        let data = std::fs::read(&target_dir)?;
+        check_hashes(&hashes, data)?;
+        tracing::info!("Hash is valid");
     }
 
     Ok(())

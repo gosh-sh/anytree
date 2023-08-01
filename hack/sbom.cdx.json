@@ -10,7 +10,29 @@
         "name": "anytree",
         "version": "0.0.0"
       }
-    ]
+    ],
+    "component": {
+      "type": "application",
+      "name": "anytree-test-project",
+      "hashes": [
+        {
+          "alg": "MD5",
+          "content": "c7081de77f448f47e0c0e5b4086ceb55"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "f86b497593e126bf015a4a1881a3f4fefa70dd29"
+        },
+        {
+          "alg": "SHA-256",
+          "content": "f2207fff71916597e2d39c4bf93346ff08b4e1ad42ec0d4bb2fb56c4c784c4e2"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "c81f2259a1508819f2e6fd1a57a1d05937a4c72a03ba33db0eef234aa42033ea90a0de63ec88c833719718e1b097f21084a3605b8986f2b261d5c5278cb9bda2"
+        }
+      ]
+    }
   },
   "components": [
     {
@@ -32,10 +54,6 @@
         {
           "name": "target",
           "value": "cargo/project"
-        },
-        {
-          "name": "result",
-          "value": "anytree-test-project"
         }
       ],
       "hashes": [
