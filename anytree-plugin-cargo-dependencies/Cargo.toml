@@ -1,0 +1,20 @@
+[package]
+name = "anytree-plugin-cargo-dependencies"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow.workspace = true
+anytree-sbom = { path = "../anytree-sbom" }
+anytree-utils = { path = "../anytree-utils" }
+dirs = "5.0.1"
+hex = "0.4.3"
+md-5 = "0.10.5"
+serde.workspace = true
+serde_json.workspace = true
+sha-1 = "0.10.1"
+sha2 = "0.10.7"
+tracing.workspace = true
+uuid.workspace = true

@@ -6,7 +6,6 @@ use crate::cargo_components::git::CargoGitComponent;
 use crate::cargo_components::registry::CargoRegistryComponent;
 
 mod git;
-mod hash;
 mod helper;
 mod registry;
 

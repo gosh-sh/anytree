@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::process::Command;
 
-use anytree_plugin_cargo::load_dependencies;
+use anytree_plugin_cargo_dependencies::load_dependencies;
 use anytree_sbom::CycloneDXBom;
 
 fn main() -> anyhow::Result<()> {

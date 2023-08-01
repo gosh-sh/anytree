@@ -9,8 +9,8 @@ use std::sync::Once;
 use anytree_sbom::Component;
 
 use crate::cargo_components::git::constants::*;
-use crate::cargo_components::hash::check_hashes;
 use crate::cargo_components::helper::{get_component_properties, get_suffix_hash};
+use crate::crypto::hash::check_hashes;
 
 static INIT: Once = Once::new();
 pub const LIBRARY_TYPE: &str = "cargo/git";

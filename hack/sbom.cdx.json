@@ -15,75 +15,78 @@
   "components": [
     {
       "bom-ref": "anytree_test_project_0_1_0_1ec33adb-c5b6-4a61-9b01-bf455ac731d6",
-      "type": "container",
-      "mime-type": "Docker",
+      "type": "application",
       "name": "anytree_test_project",
       "version": "0.1.0",
       "externalReferences": [
         {
-          "url": "https://github.com/SilkovAlexander/anytree_test_project.git",
+          "url": "https://github.com/gosh-sh/anytree_rust_example.git",
           "type": "distribution"
         }
       ],
       "properties": [
         {
           "name": "commit",
-          "value": "b94925dc38379623c9f32859e4c3b4cd037b86c1"
+          "value": "e2aa5ce46862657c3473e94b1e614e1460b88036"
+        },
+        {
+          "name": "target",
+          "value": "cargo/project"
         }
       ],
       "hashes": [
         {
           "alg": "MD5",
-          "content": "66c3d463accb425b2a33237122e932c2"
+          "content": "627317da78f62a562232819932a07379"
         },
         {
           "alg": "SHA-1",
-          "content": "dbcc3aa7fd6c4ef96fee54ccc75a8b2eb55d2fac"
+          "content": "bc8ea09e625d8dac88d9f829de78ee7e240a9c80"
         },
         {
           "alg": "SHA-256",
-          "content": "38961fddc5773f00141d3a930f167f2a88b4669409b6f8ec694d2f32a37e3d42"
+          "content": "94346cd280fc9ca8bc00b2813f811d4066f85f37e2bcc765f385afbe37a8b246"
         },
         {
           "alg": "SHA-512",
-          "content": "9605ff6ed052d0b62c05ba8e44b9ec3c8874d6b882e8c077fa2e054626ec8d4fd97a74835edb79f0934e10634e1eb8cb6f7d619a2f7e8b8d3756f22a62d3f609"
+          "content": "aef8df8f77a7ba604a6562c2942c448a4e06fade89050a70b997a9e45462c70a23829f0cef6620b1814b8685991a251ce5a7fd41d698cd262987c96e1ca260e1"
         }
       ]
     },
     {
-      "bom-ref": "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+      "bom-ref": "rust_library_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
       "type": "library",
-      "name": "simple_lib",
+      "name": "rust_library",
       "version": "0.1.0",
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "https://github.com/SilkovAlexander/simple_lib.git",
+          "url": "https://github.com/gosh-sh/rust_library.git",
           "type": "distribution"
         }
       ],
       "properties": [
         {
           "name": "commit",
-          "value": "09885b45ddb9044d7a6a2414c45d1bea7c475883"
+          "value": "099c255c4801d276dcd328a369cbda8b7a97af9e"
         }
       ],
       "hashes": [
         {
           "alg": "MD5",
-          "content": "53ee337a81165f8c7b238bb140c61767"
+          "content": "e55ee71deb7d78c8f5817e2070b19c1b"
         },
         {
           "alg": "SHA-1",
-          "content": "9f52a32e75595e67d264d661db7262b0e0af86df"
+          "content": "8713802dc7b867ffa8e6ae8b4adb04d84029f24f"
         },
         {
           "alg": "SHA-256",
-          "content": "620612b49432a46eb193297ad39d6688f3b732dd8968d02ddbfbb62cd01abad6"
+          "content": "3ca5f85e0b8d0a79ef4cd32f7a559bc6cc15603b86119d1cf7e8374f8ac3a987"
         },
         {
           "alg": "SHA-512",
-          "content": "3206ffe843b197e983a0a81a409762932aa2e51d15b055650e7ee4ec1ae394d96dd6716b1f5b846fe7f44cd994292bb73f9eeed7b5acfc2cc59f659b24b12fcf"
+          "content": "55567913e4c3d417d2cffd09eae66d414a2c5e770d75e548ff08c2e5dcfb4e36af9e73c1f43673291a53f9b8a128973972743fb70c11f13d78dc48ddca8d9af7"
         }
       ]
     },
@@ -216,12 +219,12 @@
     {
       "ref": "anytree_test_project_0_1_0_1ec33adb-c5b6-4a61-9b01-bf455ac731d6",
       "dependsOn": [
-        "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+        "rust_library_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
         "serde_json_1_0_100_909af2e7-7f58-46e4-b058-e9468420b88c"
       ]
     },
     {
-      "ref": "simple_lib_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
+      "ref": "rust_library_0_1_0_addebdd1-c040-4f80-b8ff-da9c4f8ec529",
       "dependsOn": []
     },
     {

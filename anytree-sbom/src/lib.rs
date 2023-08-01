@@ -79,6 +79,7 @@ pub struct Component {
     #[serde(rename = "mime-type")]
     pub mime_type: Option<String>,
     pub hashes: Option<Vec<Hash>>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

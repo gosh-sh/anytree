@@ -3,10 +3,40 @@ use std::fs::{create_dir_all, remove_dir_all, File};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anytree_plugin_cargo::load_dependencies;
+use anytree_plugin_cargo_dependencies::load_dependencies;
 use uuid::Uuid;
 
-pub fn build(sbom_path: impl AsRef<Path>, cache: bool) -> anyhow::Result<()> {
+pub fn build(sbom_path: impl AsRef<Path>, _cache: bool) -> anyhow::Result<()> {
+    let sbom: anytree_sbom::CycloneDXBom =
+        serde_json::from_reader(File::open(sbom_path.as_ref())?)?;
+
+    let container_uuid = Uuid::new_v4().to_string();
+    tracing::info!(?container_uuid, "Building container");
+
+    let container_name = format!("anytree-builder-{}", container_uuid);
+
+    let container_dir = dirs::cache_dir()
+        .unwrap_or_else(|| PathBuf::from(".cache"))
+        .join("anytree")
+        .join("builder")
+        .join(&container_name);
+
+    for component in &sbom.components {
+        if let Some(properties) = &component.properties {
+            if let Some(prop) = properties.iter().find(|prop| prop.name == "target") {
+                if prop.value == anytree_plugin_cargo::PROJECT_TYPE {
+                    tracing::trace!("Found cargo target");
+                    anytree_plugin_cargo::build_cargo_project(component, &sbom, container_dir)?;
+                    return Ok(());
+                }
+            }
+        }
+    }
+
+    anyhow::bail!("Failed to find valid target to build");
+}
+
+pub fn build_old(sbom_path: impl AsRef<Path>, cache: bool) -> anyhow::Result<()> {
     let sbom: anytree_sbom::CycloneDXBom =
         serde_json::from_reader(File::open(sbom_path.as_ref())?)?;
 

@@ -18,4 +18,4 @@ fix:
 
 .PHONY: run
 run:
-	cargo run --bin anytree -- build "./hack/sbom.spdx.json"
+	cargo run --bin anytree -- build "./hack/sbom.сdx.json"

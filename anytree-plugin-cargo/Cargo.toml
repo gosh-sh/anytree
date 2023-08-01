@@ -7,14 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-anytree-sbom = { path = "../anytree-sbom" }
-anytree-utils = { path = "../anytree-utils" }
-dirs = "5.0.1"
-hex = "0.4.3"
-md-5 = "0.10.5"
-serde.workspace = true
-serde_json.workspace = true
-sha-1 = "0.10.1"
-sha2 = "0.10.7"
+anytree-plugin-cargo-dependencies = { path = "../anytree-plugin-cargo-dependencies/" }
+anytree-sbom = { path = "../anytree-sbom/" }
 tracing.workspace = true
 uuid.workspace = true

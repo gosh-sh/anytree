@@ -87,6 +87,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "anytree-plugin-cargo",
+ "anytree-plugin-cargo-dependencies",
  "anytree-sbom",
  "anytree-utils",
  "clap",
@@ -98,6 +99,17 @@ dependencies = [
 
 [[package]]
 name = "anytree-plugin-cargo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "anytree-plugin-cargo-dependencies",
+ "anytree-sbom",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "anytree-plugin-cargo-dependencies"
 version = "0.1.0"
 dependencies = [
  "anyhow",
