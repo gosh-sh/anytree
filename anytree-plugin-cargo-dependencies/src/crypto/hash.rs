@@ -16,7 +16,6 @@ enum Alg {
 }
 
 pub fn check_hashes(hashes: &Vec<Hash>, data: impl AsRef<[u8]>) -> anyhow::Result<()> {
-    tracing::trace!("Checking hashes");
     for hash in hashes {
         tracing::trace!("Hash params: {:?}", hash);
         let digest = count_hash(&hash.alg, &data)?;

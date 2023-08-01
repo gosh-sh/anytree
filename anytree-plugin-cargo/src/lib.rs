@@ -1,6 +1,8 @@
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::vec;
 
 use anytree_plugin_cargo_dependencies::crypto::hash::check_hashes;
 use anytree_plugin_cargo_dependencies::load_dependencies;
@@ -15,17 +17,16 @@ const CONTAINER_REGISTRY_ROOT: &str = "/usr/local/cargo/";
 const CONTAINER_TARGET_DIR: &str = "/tmp/target/";
 
 const CONTAINER_BASE: &str = "rust:1.71";
-const BUILD_CMD: &str = "cargo build --offline --release";
 
 pub const PROJECT_TYPE: &str = "cargo/project";
 
-pub fn build_cargo_project(
+pub fn build(
     project: &Component,
     sbom: &CycloneDXBom,
+    container_name: &str,
     run_dir: impl AsRef<Path>,
 ) -> anyhow::Result<()> {
-    let mut src_dir = PathBuf::from(run_dir.as_ref());
-    src_dir.push(PROJECT_DIR);
+    let src_dir = run_dir.as_ref().join(PROJECT_DIR);
     std::fs::create_dir_all(&src_dir)?;
     checkout_project(project, &src_dir)?;
 
@@ -39,9 +40,11 @@ pub fn build_cargo_project(
     target_dir.push(TARGET_DIR);
     std::fs::create_dir_all(&target_dir)?;
 
-    let container_name = format!("{}_{}", project.name, uuid::Uuid::new_v4());
+    tracing::trace!("Prepare build container");
+
     let mut docker_cmd = Command::new("docker");
     docker_cmd.arg("run");
+    docker_cmd.arg("-t");
     docker_cmd.arg("--network").arg("none");
     docker_cmd.arg("--name").arg(&container_name);
 
@@ -98,21 +101,51 @@ pub fn build_cargo_project(
     docker_cmd.arg(CONTAINER_BASE);
     docker_cmd.arg("sh").arg("-c");
 
-    let build_cmd = format!("{} --target-dir {}", BUILD_CMD, CONTAINER_TARGET_DIR);
+    let build_cmd =
+        format!("cargo build --offline --release --target-dir {}", CONTAINER_TARGET_DIR);
     docker_cmd.arg(build_cmd);
 
-    tracing::trace!(?docker_cmd, "Running docker command");
+    docker_cmd.stdout(Stdio::piped());
+    docker_cmd.stderr(Stdio::piped());
 
-    let output = docker_cmd.output()?;
-    tracing::trace!("Result: {:?}", output);
+    // TODO: better wording
+    tracing::info!("Running docker builder (hint: use TRACE level for more info)");
+    tracing::trace!("Running docker command: {:?}", {
+        let mut parts = vec![docker_cmd.get_program()];
+        parts.extend(docker_cmd.get_args());
+        parts.join(OsStr::new(" "))
+    });
+
+    let mut docker_child = docker_cmd.spawn()?;
+
+    std::thread::scope(|s| {
+        let stdout = docker_child.stdout.take().expect("failed to capture stdout");
+        let stderr = docker_child.stderr.take().expect("failed to capture stderr");
+        s.spawn(|| {
+            tracing::trace!("follow stdout");
+            for line in BufReader::new(stdout).lines() {
+                println!("out | {}", line.unwrap());
+            }
+        });
+        s.spawn(|| {
+            tracing::trace!("follow stderr");
+            for line in BufReader::new(stderr).lines() {
+                println!("err | {}", line.unwrap());
+            }
+        });
+    });
+
+    let res = docker_child.wait()?;
+    if !res.success() {
+        anyhow::bail!("docker command failed: {}", res.code().unwrap_or(-1));
+    }
 
     // let mut docker_cp = Command::new("docker");
     // docker_cp.arg("cp");
-    //
+
     // let container_path = format!("{}:{}", container_name, "/tmp/proj/target");
     // docker_cp.arg(container_path);
     // docker_cp.arg(&target_dir);
-    //
     // tracing::trace!(?docker_cp, "Running docker command");
     //
     // eprintln!("CP Status: {:?}", docker_cp.status()?);
@@ -121,6 +154,7 @@ pub fn build_cargo_project(
 }
 
 fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::Result<()> {
+    tracing::trace!("Load project to {:?}", src_dir.as_ref());
     let url = &project
         .external_references
         .as_ref()
@@ -134,13 +168,15 @@ fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::R
         .ok_or(anyhow::format_err!("Failed to get commit for component: {}", project.name))?
         .value;
 
-    tracing::trace!("Clone repo {url} to {:?}", src_dir.as_ref());
+    tracing::info!("Checking out project {url}#{commit}");
+
     if !Command::new("git")
         .arg("clone")
         .arg(url)
         .arg(src_dir.as_ref())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        // inherit all output because it's sort of user output via our bin
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
         .status()?
         .success()
     {
@@ -168,6 +204,7 @@ fn checkout_project(project: &Component, src_dir: impl AsRef<Path>) -> anyhow::R
             .output()?
             .stdout;
 
+        tracing::info!("Checking project hashes");
         check_hashes(hashes, git_archive_data)?;
     }
 

@@ -96,6 +96,7 @@ impl CargoRegistryComponent {
 
         if let Some(hashes) = &component.hashes {
             let data = std::fs::read(&cache_path)?;
+            tracing::info!("Check hash for {}", &name);
             check_hashes(hashes, data)?;
         }
 
