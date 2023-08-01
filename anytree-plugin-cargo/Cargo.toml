@@ -9,5 +9,6 @@ edition = "2021"
 anyhow.workspace = true
 anytree-plugin-cargo-dependencies = { path = "../anytree-plugin-cargo-dependencies/" }
 anytree-sbom = { path = "../anytree-sbom/" }
+anytree-utils = { path = "../anytree-utils/" }
 tracing.workspace = true
 uuid.workspace = true

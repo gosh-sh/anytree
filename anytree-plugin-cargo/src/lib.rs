@@ -7,6 +7,7 @@ use std::vec;
 use anytree_plugin_cargo_dependencies::crypto::hash::check_hashes;
 use anytree_plugin_cargo_dependencies::load_dependencies;
 use anytree_sbom::{Component, CycloneDXBom};
+use anytree_utils::tracing::wrap_cmd_with_tracing;
 
 const PROJECT_DIR: &str = "src";
 const DEPENDENCIES_DIR: &str = "cargo";
@@ -118,22 +119,7 @@ pub fn build(
 
     let mut docker_child = docker_cmd.spawn()?;
 
-    std::thread::scope(|s| {
-        let stdout = docker_child.stdout.take().expect("failed to capture stdout");
-        let stderr = docker_child.stderr.take().expect("failed to capture stderr");
-        s.spawn(|| {
-            tracing::trace!("follow stdout");
-            for line in BufReader::new(stdout).lines() {
-                println!("out | {}", line.unwrap());
-            }
-        });
-        s.spawn(|| {
-            tracing::trace!("follow stderr");
-            for line in BufReader::new(stderr).lines() {
-                println!("err | {}", line.unwrap());
-            }
-        });
-    });
+    wrap_cmd_with_tracing(&mut docker_child);
 
     let res = docker_child.wait()?;
     if !res.success() {

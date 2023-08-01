@@ -1,3 +1,5 @@
+use std::io::{BufRead, BufReader};
+
 use tracing_subscriber::EnvFilter;
 
 pub fn default_init() {
@@ -25,4 +27,23 @@ pub fn default_init() {
             )
             .init();
     };
+}
+
+pub fn wrap_cmd_with_tracing(child: &mut std::process::Child) {
+    let stdout = child.stdout.take().expect("failed to capture stdout");
+    let stderr = child.stderr.take().expect("failed to capture stderr");
+    std::thread::scope(|s| {
+        s.spawn(|| {
+            tracing::trace!("follow stdout");
+            for line in BufReader::new(stdout).lines() {
+                println!("out | {}", line.unwrap());
+            }
+        });
+        s.spawn(|| {
+            tracing::trace!("follow stderr");
+            for line in BufReader::new(stderr).lines() {
+                println!("err | {}", line.unwrap());
+            }
+        });
+    });
 }

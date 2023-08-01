@@ -104,6 +104,7 @@ dependencies = [
  "anyhow",
  "anytree-plugin-cargo-dependencies",
  "anytree-sbom",
+ "anytree-utils",
  "tracing",
  "uuid",
 ]
