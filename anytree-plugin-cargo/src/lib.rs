@@ -3,9 +3,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::vec;
 
-use anytree_plugin_cargo_dependencies::crypto::hash::check_hashes;
 use anytree_plugin_cargo_dependencies::load_dependencies;
 use anytree_sbom::{Component, CycloneDXBom};
+use anytree_utils::crypto::hash::check_hashes;
 use anytree_utils::tracing::wrap_cmd_with_tracing;
 
 const PROJECT_DIR: &str = "src";

@@ -1,5 +1,4 @@
 mod cargo_components;
-pub mod crypto;
 
 use std::path::Path;
 

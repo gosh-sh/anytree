@@ -18,8 +18,8 @@ fix:
 
 .PHONY: run
 run:
-	cargo run --bin anytree -- build "./hack/sbom.cdx.json"
+	cargo run --bin anytree -- build "./hack/cargo_sbom.cdx.json"
 
 .PHONY: debug_run
 debug_run:
-	ANYTREE_LOG=trace cargo run --bin anytree -- build "./hack/sbom.cdx.json"
+	ANYTREE_LOG=trace cargo run --bin anytree -- build "./hack/cargo_sbom.cdx.json"

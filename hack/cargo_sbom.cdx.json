@@ -31,6 +31,12 @@
           "alg": "SHA-512",
           "content": "c81f2259a1508819f2e6fd1a57a1d05937a4c72a03ba33db0eef234aa42033ea90a0de63ec88c833719718e1b097f21084a3605b8986f2b261d5c5278cb9bda2"
         }
+      ],
+      "properties": [
+        {
+          "name": "platform",
+          "value": "linux"
+        }
       ]
     }
   },

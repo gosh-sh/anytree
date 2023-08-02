@@ -1,0 +1,63 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "GOSH",
+        "name": "anytree",
+        "version": "0.0.0"
+      }
+    ],
+    "component": {
+      "bom-ref": "result_file",
+      "type": "file",
+      "name": "random.txt",
+      "properties": [
+        {
+          "name": "platform",
+          "value": "linux"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "1",
+      "type": "application",
+      "name": "bash",
+      "description": "base64 /dev/urandom | head -c 100 > random.txt",
+      "properties": [
+        {
+          "name": "workdir",
+          "value": "/tmp"
+        },
+        {
+          "name": "target",
+          "value": "bash_script"
+        }
+      ]
+    },
+    {
+      "bom-ref": "2",
+      "type": "container",
+      "name": "ubuntu.22.04"
+    }
+  ],
+  "compositions": [
+    {
+      "bon-ref": "12312",
+      "aggregate": "not_specified",
+      "assemblies": "2"
+    },
+    {
+      "aggregate": "not_specified",
+      "assemblies": "1",
+      "dependencies": [
+        "12312"
+      ]
+    }
+  ]
+}
