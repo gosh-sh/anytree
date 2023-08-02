@@ -1,5 +1,5 @@
 [package]
-name = "anytree-plugin-cargo-dependencies"
+name = "anytree-plugin-bash"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,11 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-anytree-sbom = { path = "../anytree-sbom" }
-anytree-utils = { path = "../anytree-utils" }
-dirs = "5.0.1"
-hex = "0.4.3"
-serde.workspace = true
-serde_json.workspace = true
+anytree-sbom = { path = "../anytree-sbom/" }
+anytree-utils = { path = "../anytree-utils/" }
 tracing.workspace = true
 uuid.workspace = true

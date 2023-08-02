@@ -86,6 +86,7 @@ name = "anytree-cli"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "anytree-plugin-bash",
  "anytree-plugin-cargo",
  "anytree-plugin-cargo-dependencies",
  "anytree-sbom",
@@ -93,6 +94,17 @@ dependencies = [
  "clap",
  "dirs",
  "serde_json",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "anytree-plugin-bash"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "anytree-sbom",
+ "anytree-utils",
  "tracing",
  "uuid",
 ]
@@ -118,11 +130,8 @@ dependencies = [
  "anytree-utils",
  "dirs",
  "hex",
- "md-5",
  "serde",
  "serde_json",
- "sha-1",
- "sha2",
  "tracing",
  "uuid",
 ]
@@ -142,6 +151,13 @@ name = "anytree-utils"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "anytree-sbom",
+ "hex",
+ "md-5",
+ "serde",
+ "serde_json",
+ "sha-1",
+ "sha2",
  "tracing",
  "tracing-subscriber",
 ]

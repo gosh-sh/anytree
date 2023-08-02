@@ -13,6 +13,7 @@ serde_json.workspace = true
 tracing.workspace = true
 uuid.workspace = true
 
+anytree-plugin-bash = { path = "../anytree-plugin-bash/" }
 anytree-plugin-cargo = { path = "../anytree-plugin-cargo/" }
 anytree-plugin-cargo-dependencies = { path = "../anytree-plugin-cargo-dependencies/" }
 anytree-sbom = { path = "../anytree-sbom/" }

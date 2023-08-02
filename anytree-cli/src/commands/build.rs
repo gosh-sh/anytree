@@ -31,12 +31,35 @@ pub fn build(sbom_path: impl AsRef<Path>, _cache: bool) -> anyhow::Result<()> {
     let container_dir = builder_dir.join(&container_name);
     create_dir_all(&container_dir)?;
 
+    if let Some(sbom_platform) = &sbom
+        .metadata
+        .as_ref()
+        .and_then(|md| md.component.as_ref())
+        .and_then(|comp| comp.properties.as_ref())
+        .and_then(|props| props.iter().find(|prop| prop.name == "platform"))
+        .map(|prop| prop.value.clone())
+    {
+        let cur_platform = std::env::consts::OS;
+        if cur_platform != sbom_platform {
+            anyhow::bail!(
+                "Platform specified in SBOM ({}) doesn't match current platform ({})",
+                sbom_platform,
+                cur_platform
+            );
+        }
+    }
+
     for component in &sbom.components {
         if let Some(properties) = &component.properties {
             if let Some(prop) = properties.iter().find(|prop| prop.name == "target") {
                 if prop.value == anytree_plugin_cargo::PROJECT_TYPE {
                     tracing::trace!("Found cargo target");
                     anytree_plugin_cargo::build(component, &sbom, &container_name, container_dir)?;
+                    return Ok(());
+                }
+                if prop.value == anytree_plugin_bash::PROJECT_TYPE {
+                    tracing::trace!("Found bash target");
+                    anytree_plugin_bash::execute(component, &sbom, &container_name, container_dir)?;
                     return Ok(());
                 }
             }
