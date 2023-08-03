@@ -11,6 +11,10 @@ from urllib.parse import urlparse
 with open('Cargo.lock') as f:
     cargo_lock = toml.load(f)
 
+# Load existing BOM
+with open('initial-sbom.json') as f:
+    bom = json.load(f)
+
 def get_hashes(file_path):
     with open(file_path,"rb") as f:
         bytes = f.read() # Read file bytes
@@ -41,7 +45,6 @@ def clone_and_archive(url, commit, target_path):
     subprocess.run(['rm', '-rf', 'repo'], check=True)
     print(f"Cloned repository and created archive at {target_path}")
 
-components = []
 for package in cargo_lock['package']:
     name = package['name']
     version = package['version']
@@ -81,20 +84,12 @@ for package in cargo_lock['package']:
         }
         if properties:
             component["properties"] = properties
-        components.append(component)
+        bom["components"].append(component)
     finally:
         if os.path.isfile(tmp_file):
             os.remove(tmp_file)
 
-bom = {
-    "bomFormat": "CycloneDX",
-    "specVersion": "1.5",
-    "version": 1,
-    "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
-    "components": components
-}
-
-# Write BOM to a file
-with open('bom.json', 'w') as f:
+# Write SBOM back to the same file
+with open('sbom.json', 'w') as f:
     json.dump(bom, f, indent=2)
-    print(f"Written BOM to bom.json")
+    print(f"Updated SBOM written to sbom.json")
