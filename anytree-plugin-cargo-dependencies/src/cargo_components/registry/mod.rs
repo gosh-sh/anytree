@@ -91,7 +91,7 @@ impl CargoRegistryComponent {
             .stderr(Stdio::piped())
             .status()?;
         if !status.success() {
-            anyhow::bail!("Failed to clone bare repo: {}", url);
+            anyhow::bail!("Failed to download archive: {}", url);
         }
 
         if let Some(hashes) = &component.hashes {
@@ -136,9 +136,9 @@ impl CargoRegistryComponent {
         // Download index file
         tracing::trace!("Downloading the index. url: {}", index_url);
         let status =
-            Command::new("curl").arg("-L").arg(index_url).stderr(Stdio::piped()).output()?;
+            Command::new("curl").arg("-L").arg(&index_url).stderr(Stdio::piped()).output()?;
         if !status.status.success() {
-            anyhow::bail!("Failed to clone bare repo: {}", url);
+            anyhow::bail!("Failed to download crate index: {}", index_url);
         }
         let mut index_str = None;
         let lines = std::str::from_utf8(status.stdout.as_slice())?;

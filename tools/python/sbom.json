@@ -13,25 +13,7 @@
     ],
     "component": {
       "type": "application",
-      "name": "anytree-test-project",
-      "hashes": [
-        {
-          "alg": "MD5",
-          "content": "c7081de77f448f47e0c0e5b4086ceb55"
-        },
-        {
-          "alg": "SHA-1",
-          "content": "f86b497593e126bf015a4a1881a3f4fefa70dd29"
-        },
-        {
-          "alg": "SHA-256",
-          "content": "f2207fff71916597e2d39c4bf93346ff08b4e1ad42ec0d4bb2fb56c4c784c4e2"
-        },
-        {
-          "alg": "SHA-512",
-          "content": "c81f2259a1508819f2e6fd1a57a1d05937a4c72a03ba33db0eef234aa42033ea90a0de63ec88c833719718e1b097f21084a3605b8986f2b261d5c5278cb9bda2"
-        }
-      ],
+      "name": "git-remote-gosh_v5_1_0",
       "properties": [
         {
           "name": "platform",
@@ -41,6 +23,32 @@
     }
   },
   "components": [
+    {
+      "bom-ref": "git-remote-gosh_0_1_0_1ec33adb-c5b6-4a61-9b01-bf455ac731d6",
+      "type": "application",
+      "name": "git-remote-gosh",
+      "version": "5.1.27",
+      "externalReferences": [
+        {
+          "url": "https://github.com/gosh-sh/gosh.git",
+          "type": "distribution"
+        }
+      ],
+      "properties": [
+        {
+          "name": "commit",
+          "value": "08d9325d8df759ca833a60a66fcc6b2b8c060a87"
+        },
+        {
+          "name": "target",
+          "value": "cargo/project"
+        },
+        {
+          "name": "src_path",
+          "value": "v5_x/v5.1.0/git-remote-gosh"
+        }
+      ]
+    },
     {
       "bom-ref": "serde_1_0_171_0224b260-14f0-42d1-bd3b-2fef914dc198",
       "type": "library",
@@ -638,7 +646,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-sdk.git",
+          "url": "https://github.com/tonlabs/ever-sdk.git",
           "type": "distribution"
         }
       ],
@@ -675,7 +683,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-sdk.git",
+          "url": "https://github.com/tonlabs/ever-sdk.git",
           "type": "distribution"
         }
       ],
@@ -3905,7 +3913,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-struct.git",
+          "url": "https://github.com/tonlabs/ever-struct.git",
           "type": "distribution"
         }
       ],
@@ -7662,7 +7670,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/lockfree.git",
+          "url": "https://github.com/tonlabs/lockfree.git",
           "type": "distribution"
         }
       ],
@@ -12380,7 +12388,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/sodalite.git",
+          "url": "https://github.com/tonlabs/sodalite.git",
           "type": "distribution"
         }
       ],
@@ -13440,7 +13448,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-abi.git",
+          "url": "https://github.com/tonlabs/ever-abi.git",
           "type": "distribution"
         }
       ],
@@ -13477,7 +13485,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-tl.git",
+          "url": "https://github.com/tonlabs/ever-tl.git",
           "type": "distribution"
         }
       ],
@@ -13514,7 +13522,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-block.git",
+          "url": "https://github.com/tonlabs/ever-block.git",
           "type": "distribution"
         }
       ],
@@ -13551,7 +13559,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-block-json.git",
+          "url": "https://github.com/tonlabs/ever-block-json.git",
           "type": "distribution"
         }
       ],
@@ -13588,7 +13596,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-sdk.git",
+          "url": "https://github.com/tonlabs/ever-sdk.git",
           "type": "distribution"
         }
       ],
@@ -13625,7 +13633,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-sdk.git",
+          "url": "https://github.com/tonlabs/ever-sdk.git",
           "type": "distribution"
         }
       ],
@@ -13662,7 +13670,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-executor.git",
+          "url": "https://github.com/tonlabs/ever-executor.git",
           "type": "distribution"
         }
       ],
@@ -13699,7 +13707,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-sdk.git",
+          "url": "https://github.com/tonlabs/ever-sdk.git",
           "type": "distribution"
         }
       ],
@@ -13736,7 +13744,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-tl.git",
+          "url": "https://github.com/tonlabs/ever-tl.git",
           "type": "distribution"
         }
       ],
@@ -13773,7 +13781,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-types.git",
+          "url": "https://github.com/tonlabs/ever-types.git",
           "type": "distribution"
         }
       ],
@@ -13810,7 +13818,7 @@
       "mime-type": "cargo/git",
       "externalReferences": [
         {
-          "url": "git+https://github.com/tonlabs/ever-vm.git",
+          "url": "https://github.com/tonlabs/ever-vm.git",
           "type": "distribution"
         }
       ],
