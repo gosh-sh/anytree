@@ -41,7 +41,7 @@ else:
     # Predefined template for the initial BOM
     bom = {
         "bomFormat": "CycloneDX",
-        "specVersion": "1.5",
+        "specVersion": "1.4",
         "version": 1,
         "metadata": {
             "tools": [
