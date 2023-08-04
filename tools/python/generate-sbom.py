@@ -5,16 +5,19 @@ import toml
 import uuid
 import json
 import subprocess
+import concurrent.futures
 from urllib.parse import urlparse
+import tempfile
 
 CARGO_LOCK_PATH = 'Cargo.lock'
 CARGO_TOML_PATH = 'Cargo.toml'
 INITIAL_SBOM_PATH = 'initial-sbom.json' # if need to append 
 TMP_FILE_PATH = os.path.abspath('tmp_file')
 SBOM_OUTPUT_PATH = 'sbom.json'
-PROJECT_URL= 'https://github.com/gosh-sh/gosh.git'
-PROJECT_COMMIT= '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
-PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh'
+PROJECT_URL = 'https://github.com/gosh-sh/gosh.git'
+PROJECT_COMMIT = '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
+PROJECT_SRC_PATH = 'v5_x/v5.1.0/git-remote-gosh'
+PROJECT_VENDOR = 'GOSH'
 
 # Load Cargo.lock
 with open(CARGO_LOCK_PATH) as f:
@@ -42,7 +45,13 @@ else:
         "specVersion": "1.5",
         "version": 1,
         "metadata": {
-            "tools": [],
+            "tools": [
+                {
+                    "vendor": PROJECT_VENDOR,
+                    "name": project_name,
+                    "version": project_version
+                }
+            ],
             "component": {
                 "type": "application",
                 "name": project_bin,
@@ -59,7 +68,7 @@ else:
 
 # Main project component data
 main_component = {
-    "bom-ref": f"{project_name}_{project_version.replace('.', '_')}_{uuid.uuid4().hex}",
+    "bom-ref": f"{project_name}_{project_version.replace('.', '_')}_{uuid.uuid4()}",
     "type": "application",
     "name": f"{project_name}",
     "version": f"{project_version}",
@@ -114,17 +123,10 @@ def clone_and_archive(url, commit, target_path):
     subprocess.run(['rm', '-rf', 'repo'], check=True)
     print(f"Cloned repository and created archive at {target_path}")
 
-# Process dependencies from Cargo.lock
-for package in cargo_lock.get('package', []):
-    name = package.get('name')
-    version = package.get('version')
-    
-    if 'source' not in package:
-        print(f"Warning: Skipping package {name} due to lack of source")
-        continue
-
-    source = package.get('source')
-    tmp_file = os.path.abspath('tmp_file')
+def download_component(component, tmp_file):
+    name = component.get('name')
+    version = component.get('version')
+    source = component.get('source')
 
     try:
         if "git" in source and '#' in source:
@@ -144,7 +146,7 @@ for package in cargo_lock.get('package', []):
             properties = []
 
         component = {
-            "bom-ref": f"{name}_{version.replace('.', '_')}_{uuid.uuid4().hex}",
+            "bom-ref": f"{name}_{version.replace('.', '_')}_{uuid.uuid4()}",
             "type": "library",
             "name": name,
             "version": version,
@@ -154,17 +156,34 @@ for package in cargo_lock.get('package', []):
         }
         if properties:
             component["properties"] = properties
-        bom["components"].append(component)
+        return component
     finally:
         if os.path.isfile(tmp_file):
             os.remove(tmp_file)
 
+# Process dependencies from Cargo.lock using parallelism
+bom_components = []
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    future_to_component = {}
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        for package in cargo_lock.get('package', []):
+            tmp_file = os.path.join(tmp_dir, f"{package.get('name')}_{package.get('version')}.tmp")
+            future_to_component[executor.submit(download_component, package, tmp_file)] = package
+
+        for future in concurrent.futures.as_completed(future_to_component):
+            component = future_to_component[future]
+            try:
+                result = future.result()
+                if result:
+                    bom_components.append(result)
+            except Exception as e:
+                print(f"Error processing package {component.get('name')}: {e}")
+
 # Remove the existing component, if any, with the same name and version
-components = bom.get("components", [])
-bom["components"] = [component for component in components if component.get("name") != project_name and component.get("version") != project_version]
+bom["components"] = [component for component in bom.get("components", []) if component.get("name") != project_name and component.get("version") != project_version]
 
 # Add the new component at the beginning of the components list
-bom["components"].insert(0, main_component)
+bom["components"] = [main_component] + bom_components + bom["components"]
 
 # Write SBOM back to the same file
 with open(SBOM_OUTPUT_PATH, 'w') as f:
