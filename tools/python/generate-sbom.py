@@ -12,7 +12,6 @@ import tempfile
 CARGO_LOCK_PATH = 'Cargo.lock'
 CARGO_TOML_PATH = 'Cargo.toml'
 INITIAL_SBOM_PATH = 'initial-sbom.json' # if need to append 
-TMP_FILE_PATH = os.path.abspath('tmp_file')
 SBOM_OUTPUT_PATH = 'sbom.json'
 PROJECT_URL = 'https://github.com/gosh-sh/gosh.git'
 PROJECT_COMMIT = '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
