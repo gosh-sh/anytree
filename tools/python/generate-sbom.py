@@ -11,9 +11,36 @@ from urllib.parse import urlparse
 with open('Cargo.lock') as f:
     cargo_lock = toml.load(f)
 
-# Load existing BOM
-with open('initial-sbom.json') as f:
-    bom = json.load(f)
+# Load Cargo.toml
+with open('Cargo.toml') as f:
+    cargo_toml = toml.load(f)
+
+# Check if initial-sbom.json exists
+if os.path.exists('initial-sbom.json'):
+    # Load existing BOM
+    with open('initial-sbom.json') as f:
+        bom = json.load(f)
+else:
+    # Predefined template for the initial BOM
+    bom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.5",
+        "version": 1,
+        "metadata": {
+            "tools": [],
+            "component": {
+                "type": "application",
+                "name": "anytree-test-project",  # Replace with the desired repository name (input variable)
+                "properties": [
+                    {
+                        "name": "platform",
+                        "value": "linux",
+                    }
+                ],
+            },
+        },
+        "components": [],
+    }
 
 def get_hashes(file_path):
     with open(file_path,"rb") as f:
@@ -87,6 +114,15 @@ for package in cargo_lock['package']:
     finally:
         if os.path.isfile(tmp_file):
             os.remove(tmp_file)
+
+# Update metadata section
+bom["metadata"]["tools"] = [
+    {
+        "vendor": "GOSH",
+        "name": cargo_toml['package']['name'],
+        "version": cargo_toml['package']['version'],
+    }
+]
 
 # Write SBOM back to the same file
 with open('sbom.json', 'w') as f:
