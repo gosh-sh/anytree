@@ -136,7 +136,7 @@ impl CargoRegistryComponent {
         // Download index file
         tracing::trace!("Downloading the index. url: {}", index_url);
         let status =
-            Command::new("curl").arg("-L").arg(index_url).stderr(Stdio::piped()).output()?;
+            Command::new("curl").arg("-L").arg(&index_url).stderr(Stdio::piped()).output()?;
         if !status.status.success() {
             anyhow::bail!("Failed to download crate index: {}", index_url);
         }
