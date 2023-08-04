@@ -36,7 +36,6 @@ def download_file(url, target_path):
 
 def clone_and_archive(url, commit, target_path):
     print(f"Cloning repository from {url}")
-    url = url.replace('git+', '') # remove 'git+' from URL
     subprocess.run(['git', 'clone', url, 'repo'], check=True)
     os.chdir('repo')
     subprocess.run(['git', 'checkout', commit], check=True)
@@ -60,7 +59,7 @@ for package in cargo_lock['package']:
         if "git" in source and '#' in source:
             mime_type = "cargo/git"
             url, commit = source.split('#')
-            url = url.split('?')[0]
+            url = url.split('?')[0].replace("git+", "")
             clone_and_archive(url, commit, tmp_file)
             hashes = get_hashes(tmp_file)
             external_references = [{"url": url, "type": "distribution"}]
