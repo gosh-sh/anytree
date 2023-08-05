@@ -3,12 +3,16 @@ use std::path::{Path, PathBuf};
 
 use uuid::Uuid;
 
-pub fn build(sbom_path: impl AsRef<Path>, _cache: bool) -> anyhow::Result<()> {
+pub fn build(sbom_path: impl AsRef<Path>, cache: Option<impl AsRef<str>>) -> anyhow::Result<()> {
     let sbom: anytree_sbom::CycloneDXBom =
         serde_json::from_reader(File::open(sbom_path.as_ref())?)?;
 
-    let container_uuid = Uuid::new_v4().to_string();
-    let container_name = format!("anytree-builder-{}", container_uuid);
+    let container_name = if let Some(run_dir) = cache {
+        run_dir.as_ref().to_string()
+    } else {
+        let container_uuid = Uuid::new_v4().to_string();
+        format!("anytree-builder-{}", container_uuid)
+    };
     println!(
         r#"
 ||

@@ -26,8 +26,22 @@ pub fn build(
     run_dir: impl AsRef<Path>,
 ) -> anyhow::Result<()> {
     let src_dir = run_dir.as_ref().join(PROJECT_DIR);
-    std::fs::create_dir_all(&src_dir)?;
-    checkout_project(project, &src_dir)?;
+    if !src_dir.exists() {
+        std::fs::create_dir_all(&src_dir)?;
+        checkout_project(project, &src_dir)?;
+    }
+
+    let src_sub_path = project
+        .properties
+        .as_ref()
+        .and_then(|properties| properties.iter().find(|property| property.name == "src_path"))
+        .map(|property| property.value.clone() );
+
+    let base_image = project
+        .properties
+        .as_ref()
+        .and_then(|properties| properties.iter().find(|property| property.name == "base_image"))
+        .map(|property| property.value.clone() );
 
     let mut deps_dir = PathBuf::from(run_dir.as_ref());
     deps_dir.push(DEPENDENCIES_DIR);
@@ -84,13 +98,33 @@ pub fn build(
         });
     }
 
-    docker_cmd.arg("--workdir").arg(CONTAINER_PROJECT_DIR);
-    docker_cmd.arg(CONTAINER_BASE);
+    let mut workdir = PathBuf::from(CONTAINER_PROJECT_DIR);
+    if let Some(sub_path) = &src_sub_path {
+        workdir.push(sub_path);
+    }
+
+    docker_cmd.arg("--workdir").arg(&workdir);
+    if let Some(base) = base_image {
+        docker_cmd.arg(base);
+    } else {
+        docker_cmd.arg(CONTAINER_BASE);
+    }
     docker_cmd.arg("sh").arg("-c");
+
+
+    let prerun = project
+        .properties
+        .as_ref()
+        .and_then(|properties| properties.iter().find(|property| property.name == "prerun"))
+        .map(|property| property.value.clone() );
 
     // By default build with standard command.
     // TODO: add ability to specify build command in config
-    let build_cmd = "cargo build --offline --release".to_string();
+    let mut build_cmd = "cargo build --offline --release".to_string();
+    if let Some(prerun) = prerun {
+        build_cmd = format!("{} && {}", prerun, build_cmd);
+    }
+
     docker_cmd.arg(build_cmd);
 
     docker_cmd.stdout(Stdio::piped());
@@ -127,7 +161,7 @@ pub fn build(
 
     let mut container_path = OsString::from(container_name);
     container_path.push(":");
-    container_path.push(CONTAINER_PROJECT_DIR);
+    container_path.push(workdir);
     container_path.push("target/release/");
     container_path.push(&artifact_name);
 

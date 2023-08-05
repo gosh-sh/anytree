@@ -80,6 +80,10 @@ impl CargoRegistryComponent {
         let cache_name = format!("{name}.crate");
         cache_path.push(&cache_name);
 
+        if cache_path.exists() {
+            return Ok(());
+        }
+
         // Download crate as archive
         tracing::trace!("Downloading crate as an archive. url: {}", &url);
         let status = Command::new("curl")
@@ -140,21 +144,21 @@ impl CargoRegistryComponent {
         if !status.status.success() {
             anyhow::bail!("Failed to download crate index: {}", index_url);
         }
-        let mut index_str = None;
+        // let mut index_str = None;
         let lines = std::str::from_utf8(status.stdout.as_slice())?;
-        for line in lines.split('\n') {
-            if line.contains(version) {
-                index_str = Some(line.to_string());
-            }
-        }
-        let index_str = match index_str {
-            Some(s) => s,
-            None => {
-                anyhow::bail!("Failed to get index for specified version");
-            }
-        };
+        // for line in lines.split('\n') {
+        //     if line.contains(version) {
+        //         index_str = Some(line.to_string());
+        //     }
+        // }
+        // let index_str = match index_str {
+        //     Some(s) => s,
+        //     None => {
+        //         anyhow::bail!("Failed to get index for specified version");
+        //     }
+        // };
         // convert index to cargo cache and save to file
-        convert_index_to_cache(&index_str, index_path)?;
+        convert_index_to_cache(&lines, index_path)?;
 
         // Cargo writes .cargo-ok file into src dir but mount in Dockerfile in read only
         // so we create this file if it doesn't exist

@@ -56,6 +56,9 @@ impl CargoGitComponent {
         let dir_suffix = get_suffix_hash(url, None);
         clone_dir.push(format!("{}-{}", name, &dir_suffix));
 
+        if clone_dir.exists() {
+            return Ok(());
+        }
         // Clone bare repo
         tracing::trace!("Cloning the bare repo. url: {}", &url);
         let status = Command::new("git")
@@ -64,7 +67,8 @@ impl CargoGitComponent {
             .arg(url)
             .arg(clone_dir.as_os_str())
             .stderr(Stdio::piped())
-            .status()?;
+            .status()
+            .map_err(|e| anyhow::format_err!("Failed to bare clone repo: {e}"))?;
 
         if !status.success() {
             anyhow::bail!("Failed to clone bare repo: {}", url);
@@ -82,8 +86,22 @@ impl CargoGitComponent {
         std::fs::create_dir_all(&ref_path)?;
         ref_path.push(REF_FILE_NAME);
         if !ref_path.exists() {
-            let mut file = File::create(&ref_path)?;
+            let mut file = File::create(&ref_path)
+                .map_err(|e| anyhow::format_err!("Failed to create ref file: {e}"))?;
             file.write_all(commit.clone().as_bytes())?;
+        }
+
+        // if tag was specified need to store tag
+        let tag = properties
+            .get("tag");
+        if let Some(tag) = tag {
+            let mut tags_path = clone_dir.clone();
+            tags_path.push(REF_PATH);
+            tags_path.push("tags");
+            std::fs::create_dir_all(&tags_path)?;
+            tags_path.push(tag);
+            std::fs::write(tags_path, commit)
+                .map_err(|e| anyhow::format_err!("Failed to write tag: {e}"))?;
         }
 
         let mut checkout_dir = path.clone();
@@ -92,12 +110,14 @@ impl CargoGitComponent {
         let mut trimmed_commit = commit.clone();
         trimmed_commit.truncate(7);
         checkout_dir.push(trimmed_commit);
+
         std::fs::create_dir_all(&checkout_dir)?;
 
         // clone dir from bare repo
         tracing::trace!("Cloning from bare repo to the ordinary one. path: {:?}", &checkout_dir);
         let status = Command::new("git")
             .arg("clone")
+            .arg("--recurse-submodules")
             .arg(clone_dir.as_os_str())
             .arg(checkout_dir.as_os_str())
             .stderr(Stdio::piped())
@@ -111,6 +131,7 @@ impl CargoGitComponent {
         tracing::trace!("Checkout the commit dir: {:?}, commit: {}", &checkout_dir, commit);
         let status = Command::new("git")
             .arg("checkout")
+            .arg("-f")
             .arg(commit)
             .current_dir(checkout_dir.as_os_str())
             .stderr(Stdio::piped())

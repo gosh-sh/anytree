@@ -17,5 +17,7 @@ pub enum Commands {
     Build {
         #[arg(name = "sbom_path")]
         sbom: PathBuf,
+        #[arg(name = "run_dir")]
+        dir: Option<String>,
     },
 }

@@ -20,13 +20,13 @@ fn run() -> anyhow::Result<()> {
     let cli = Cli::try_parse()?;
 
     match cli.command {
-        Commands::Build { sbom } => {
+        Commands::Build { sbom , dir} => {
             if !sbom.exists() {
                 anyhow::bail!("{sbom:?} does not exist");
             }
 
             // TODO: cache
-            anytree_cli::commands::build::build(sbom, false)?;
+            anytree_cli::commands::build::build(sbom, dir)?;
         }
     }
 

@@ -54,14 +54,17 @@ pub fn convert_index_to_cache(
     res_bytes.append(&mut etag.as_bytes().to_vec());
     res_bytes.push(0);
 
-    // in real cache then go list of all versions followed by this version index
-    // but we store only one version we use with index obtained from SBOM
-    let object: serde_json::Value = serde_json::from_str(index_str)?;
-    let version = object.as_object().unwrap()["vers"].as_str().unwrap();
-    res_bytes.append(&mut version.as_bytes().to_vec());
-    res_bytes.push(0);
-    res_bytes.append(&mut index_str.as_bytes().to_vec());
-    res_bytes.push(0);
+    for line in index_str.split("\n") {
+        if line.is_empty() {
+            break;
+        }
+        let object: serde_json::Value = serde_json::from_str(line)?;
+        let version = object.as_object().unwrap()["vers"].as_str().unwrap();
+        res_bytes.append(&mut version.as_bytes().to_vec());
+        res_bytes.push(0);
+        res_bytes.append(&mut line.as_bytes().to_vec());
+        res_bytes.push(0);
+    }
 
     // Save to the file
     let mut ofile = File::create(output_path)?;
