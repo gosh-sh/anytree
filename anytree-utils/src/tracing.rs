@@ -1,32 +1,47 @@
 use std::io::{BufRead, BufReader};
+use indicatif::ProgressStyle;
+use tracing::Span;
+use tracing_indicatif::IndicatifLayer;
+use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{EnvFilter, Layer};
 
 pub fn default_init() {
+    let indicatif_layer = IndicatifLayer::new();
+
     if let Ok(directives) = std::env::var("ANYTREE_LOG") {
-        tracing_subscriber::fmt()
-            .with_writer(std::io::stderr)
-            .with_env_filter(EnvFilter::new(directives))
-            .event_format(
-                tracing_subscriber::fmt::format()
-                    .with_ansi(true)
-                    .with_thread_ids(true)
-                    .with_source_location(false),
+        tracing_subscriber::registry()
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .with_writer(indicatif_layer.get_stderr_writer())
+                    .event_format(
+                        tracing_subscriber::fmt::format()
+                            .with_ansi(true)
+                            .with_thread_ids(true)
+                            .with_source_location(false),
+                    )
             )
+            .with(EnvFilter::new(directives))
+            .with(indicatif_layer)
             .init();
     } else {
-        tracing_subscriber::fmt()
-            .with_writer(std::io::stderr)
-            .with_env_filter(EnvFilter::new("info"))
-            .event_format(
-                tracing_subscriber::fmt::format()
-                    .without_time()
-                    .with_ansi(true)
-                    .with_target(false)
-                    .with_source_location(false),
+        tracing_subscriber::registry()
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .with_writer(indicatif_layer.get_stderr_writer())
+                    .event_format(
+                        tracing_subscriber::fmt::format()
+                            .with_ansi(true)
+                            .with_thread_ids(true)
+                            .with_source_location(false),
+                    )
             )
+            .with(EnvFilter::new("info"))
+            .with(indicatif_layer)
             .init();
-    };
+    }
 }
 
 pub fn wrap_cmd_with_tracing(child: &mut std::process::Child) {
@@ -46,4 +61,15 @@ pub fn wrap_cmd_with_tracing(child: &mut std::process::Child) {
             }
         });
     });
+}
+
+pub fn start_progress(length: u64) -> Span {
+    let header_span = tracing::info_span!("progress");
+    header_span.pb_set_style(&ProgressStyle::default_bar());
+    header_span.pb_set_length(length);
+    header_span
+}
+
+pub fn increase_progress() {
+    Span::current().pb_inc(1);
 }
