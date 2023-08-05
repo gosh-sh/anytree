@@ -158,7 +158,7 @@ impl CargoRegistryComponent {
         //     }
         // };
         // convert index to cargo cache and save to file
-        convert_index_to_cache(&lines, index_path)?;
+        convert_index_to_cache(lines, index_path)?;
 
         // Cargo writes .cargo-ok file into src dir but mount in Dockerfile in read only
         // so we create this file if it doesn't exist

@@ -92,8 +92,7 @@ impl CargoGitComponent {
         }
 
         // if tag was specified need to store tag
-        let tag = properties
-            .get("tag");
+        let tag = properties.get("tag");
         if let Some(tag) = tag {
             let mut tags_path = clone_dir.clone();
             tags_path.push(REF_PATH);

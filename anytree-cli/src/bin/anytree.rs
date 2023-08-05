@@ -20,7 +20,7 @@ fn run() -> anyhow::Result<()> {
     let cli = Cli::try_parse()?;
 
     match cli.command {
-        Commands::Build { sbom , dir} => {
+        Commands::Build { sbom, dir } => {
             if !sbom.exists() {
                 anyhow::bail!("{sbom:?} does not exist");
             }

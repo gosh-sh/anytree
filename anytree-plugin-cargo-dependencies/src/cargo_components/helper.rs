@@ -54,7 +54,7 @@ pub fn convert_index_to_cache(
     res_bytes.append(&mut etag.as_bytes().to_vec());
     res_bytes.push(0);
 
-    for line in index_str.split("\n") {
+    for line in index_str.split('\n') {
         if line.is_empty() {
             break;
         }

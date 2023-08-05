@@ -35,13 +35,13 @@ pub fn build(
         .properties
         .as_ref()
         .and_then(|properties| properties.iter().find(|property| property.name == "src_path"))
-        .map(|property| property.value.clone() );
+        .map(|property| property.value.clone());
 
     let base_image = project
         .properties
         .as_ref()
         .and_then(|properties| properties.iter().find(|property| property.name == "base_image"))
-        .map(|property| property.value.clone() );
+        .map(|property| property.value.clone());
 
     let mut deps_dir = PathBuf::from(run_dir.as_ref());
     deps_dir.push(DEPENDENCIES_DIR);
@@ -64,7 +64,7 @@ pub fn build(
     // mount project dir
     docker_cmd.arg("--mount").arg({
         let mut s = OsString::from("type=bind,source=");
-        s.push(src_dir.clone().into_os_string());
+        s.push(src_dir.into_os_string());
         s.push(",target=");
         s.push(CONTAINER_PROJECT_DIR);
         s
@@ -111,12 +111,11 @@ pub fn build(
     }
     docker_cmd.arg("sh").arg("-c");
 
-
     let prerun = project
         .properties
         .as_ref()
         .and_then(|properties| properties.iter().find(|property| property.name == "prerun"))
-        .map(|property| property.value.clone() );
+        .map(|property| property.value.clone());
 
     // By default build with standard command.
     // TODO: add ability to specify build command in config
