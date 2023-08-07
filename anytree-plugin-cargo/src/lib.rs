@@ -160,8 +160,8 @@ pub fn build(
 
     let mut container_path = OsString::from(container_name);
     container_path.push(":");
+    workdir.push("target/release/");
     container_path.push(workdir);
-    container_path.push("target/release/");
     container_path.push(&artifact_name);
 
     tracing::trace!("Container artifact path: {:?}", container_path);
