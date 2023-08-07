@@ -66,6 +66,7 @@ impl CargoGitComponent {
             .arg("--bare")
             .arg(url)
             .arg(clone_dir.as_os_str())
+            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .status()
             .map_err(|e| anyhow::format_err!("Failed to bare clone repo: {e}"))?;
@@ -119,6 +120,7 @@ impl CargoGitComponent {
             .arg("--recurse-submodules")
             .arg(clone_dir.as_os_str())
             .arg(checkout_dir.as_os_str())
+            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .status()?;
 
@@ -133,6 +135,7 @@ impl CargoGitComponent {
             .arg("-f")
             .arg(commit)
             .current_dir(checkout_dir.as_os_str())
+            .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .status()?;
 
