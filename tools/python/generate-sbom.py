@@ -91,6 +91,10 @@ main_component = {
         {
           "name": "base_image",
           "value": "rust_for_gosh:0.1.0"
+        },
+        {
+          "name": "prerun",
+          "value": "make copy_abi"
         }
     ]
 }
