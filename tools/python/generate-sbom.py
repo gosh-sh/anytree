@@ -87,6 +87,10 @@ main_component = {
         {
             "name": "src_path",
             "value": PROJECT_SRC_PATH
+        },
+        {
+          "name": "base_image",
+          "value": "rust_for_gosh:0.1.0"
         }
     ]
 }
