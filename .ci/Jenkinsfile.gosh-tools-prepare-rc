@@ -103,21 +103,21 @@ def buildGoshCli() {
                 #!/bin/bash
                 set -ex
                 
-                # 3 = gosh
-                PIPELINE_3_ID=$(az pipelines build queue --definition-id 3 --branch \${COMMIT} --project gosh | jq .id)
-                PIPELINE_3_STATUS=inProgress
+                # 4 = gosh
+                PIPELINE_4_ID=$(az pipelines build queue --definition-id 4 --branch \${COMMIT} --project gosh | jq .id)
+                PIPELINE_4_STATUS=inProgress
 
-                until [ \$PIPELINE_3_STATUS = "completed" ]
+                until [ \$PIPELINE_4_STATUS = "completed" ]
                 do
                     sleep 60
-                    PIPELINE_3_STATUS=$(az pipelines build show --project gosh --id $PIPELINE_3_ID | jq .status | tr -d '\"')
+                    PIPELINE_4_STATUS=$(az pipelines build show --project gosh --id $PIPELINE_4_ID | jq .status | tr -d '\"')
                 done
 
                 cd ${WORKSPACE}
                 rm -rf linux-*
 
-                az pipelines runs artifact download --project gosh --artifact-name linux-amd64 --run-id $PIPELINE_3_ID --path linux-amd64 && sleep 2
-                az pipelines runs artifact download --project gosh --artifact-name linux-arm64 --run-id $PIPELINE_3_ID --path linux-arm64 && sleep 2
+                az pipelines runs artifact download --project gosh --artifact-name linux-amd64 --run-id $PIPELINE_4_ID --path linux-amd64 && sleep 2
+                az pipelines runs artifact download --project gosh --artifact-name linux-arm64 --run-id $PIPELINE_4_ID --path linux-arm64 && sleep 2
             '''
         }
     }
