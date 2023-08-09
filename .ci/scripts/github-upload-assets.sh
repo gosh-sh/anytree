@@ -9,7 +9,7 @@ ASSET=$3
 CONTENT_TYPE=$4
 
 UPLOAD_URL=$(curl -sH "Authorization: token ${TOKEN}" \
-    "https://api.github.com/repos/gosh-sh/gosh-build-tools/releases/tags/${VERSION}" | jq -r '.upload_url' | cut -d'{' -f1)
+    "https://api.github.com/repos/gosh-sh/anytree/releases/tags/${VERSION}" | jq -r '.upload_url' | cut -d'{' -f1)
 
 curl -sX POST -H "Authorization: token ${TOKEN}" \
     -H "Accept: application/vnd.github.v3+json" -H "Content-Type: ${CONTENT_TYPE}" \
