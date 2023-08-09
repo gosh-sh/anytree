@@ -30,7 +30,7 @@ pipeline {
                 git branch: "${COMMIT}", url: 'https://github.com/gosh-sh/anytree.git'
                 checkout scm
                 script {
-                    env.APP_VERSION = sh(script: " grep -m1 version gosh/Cargo.toml | awk '{print \$NF}' | tr -d '\"' ", returnStdout: true).trim()
+                    env.APP_VERSION = sh(script: " grep -m1 version anytree/Cargo.toml | awk '{print \$NF}' | tr -d '\"' ", returnStdout: true).trim()
                     currentBuild.displayName = "${BUILD_NUMBER}_${COMMIT}_${APP_VERSION}"
                 }
             }
@@ -99,28 +99,26 @@ pipeline {
 def buildGoshCli() {
     script {
         if (!params.ONLY_IMAGES) {
-            dir('gosh') {
-                sh '''
-                    #!/bin/bash
-                    set -ex
-                    
-                    # 3 = gosh
-                    PIPELINE_3_ID=$(az pipelines build queue --definition-id 3 --branch \${COMMIT} --project gosh | jq .id)
-                    PIPELINE_3_STATUS=inProgress
+            sh '''
+                #!/bin/bash
+                set -ex
+                
+                # 3 = gosh
+                PIPELINE_3_ID=$(az pipelines build queue --definition-id 3 --branch \${COMMIT} --project gosh | jq .id)
+                PIPELINE_3_STATUS=inProgress
 
-                    until [ \$PIPELINE_3_STATUS = "completed" ]
-                    do
-                        sleep 60
-                        PIPELINE_3_STATUS=$(az pipelines build show --project gosh --id $PIPELINE_3_ID | jq .status | tr -d '\"')
-                    done
+                until [ \$PIPELINE_3_STATUS = "completed" ]
+                do
+                    sleep 60
+                    PIPELINE_3_STATUS=$(az pipelines build show --project gosh --id $PIPELINE_3_ID | jq .status | tr -d '\"')
+                done
 
-                    cd ${WORKSPACE}
-                    rm -rf linux-*
+                cd ${WORKSPACE}
+                rm -rf linux-*
 
-                    az pipelines runs artifact download --project gosh --artifact-name linux-amd64 --run-id $PIPELINE_3_ID --path linux-amd64 && sleep 2
-                    az pipelines runs artifact download --project gosh --artifact-name linux-arm64 --run-id $PIPELINE_3_ID --path linux-arm64 && sleep 2
-                '''
-            }
+                az pipelines runs artifact download --project gosh --artifact-name linux-amd64 --run-id $PIPELINE_3_ID --path linux-amd64 && sleep 2
+                az pipelines runs artifact download --project gosh --artifact-name linux-arm64 --run-id $PIPELINE_3_ID --path linux-arm64 && sleep 2
+            '''
         }
     }
 }
@@ -132,11 +130,11 @@ def archiveAzureArtifacts() {
                 #!/bin/bash
                 set -ex
 
-                rm -rf gosh-*.tar.gz
+                rm -rf anytree-*.tar.gz
                 chmod +x linux-a*/*
 
-                tar -czvf gosh-linux-amd64.tar.gz -C linux-amd64 $(ls -A linux-amd64)
-                tar -czvf gosh-linux-arm64.tar.gz -C linux-arm64 $(ls -A linux-arm64)
+                tar -czvf anytree-linux-amd64.tar.gz -C linux-amd64 $(ls -A linux-amd64)
+                tar -czvf anytree-linux-arm64.tar.gz -C linux-arm64 $(ls -A linux-arm64)
             '''
         }
     }
@@ -148,8 +146,8 @@ def prereleaseBinaries() {
             dir('.ci/scripts') {
                 withCredentials([string(credentialsId: 'github-gosh-release', variable: 'TOKEN')]) {
                     sh './create-github-release.sh $TOKEN ${APP_VERSION} ${COMMIT}'
-                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/gosh-linux-amd64.tar.gz application/gzip'
-                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/gosh-linux-arm64.tar.gz application/gzip'
+                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/anytree-linux-amd64.tar.gz application/gzip'
+                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/anytree-linux-arm64.tar.gz application/gzip'
                 }
             }
         }

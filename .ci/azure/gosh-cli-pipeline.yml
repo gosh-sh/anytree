@@ -9,7 +9,7 @@ strategy:
   matrix:
     linux:
       imageName: ubuntu-20.04
-      binName: gosh
+      binName: anytree
       artifactNameAmd: linux-amd64
   maxParallel: 3
 
@@ -43,11 +43,11 @@ steps:
 # Linux
 - script: |
     set -ex
-    cargo build --release --bin gosh
+    cargo build --release --bin anytree
     sudo apt update -y
     sudo apt install -y build-essential g++-x86-64-linux-gnu libc6-dev-amd64-cross g++-aarch64-linux-gnu libc6-dev-arm64-cross gcc-aarch64-linux-gnu
     rustup target add aarch64-unknown-linux-gnu 
-    cargo build --release --target aarch64-unknown-linux-gnu --bin gosh
+    cargo build --release --target aarch64-unknown-linux-gnu --bin anytree
   env:
     CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: x86_64-linux-gnu-gcc
     CC_x86_64_unknown_linux_gnu: x86_64-linux-gnu-gcc
