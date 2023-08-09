@@ -30,7 +30,7 @@ pipeline {
                 git branch: "${COMMIT}", url: 'https://github.com/gosh-sh/anytree.git'
                 checkout scm
                 script {
-                    env.APP_VERSION = sh(script: " grep -m1 version anytree/Cargo.toml | awk '{print \$NF}' | tr -d '\"' ", returnStdout: true).trim()
+                    env.APP_VERSION = sh(script: "grep -m1 version anytree-cli/Cargo.toml | awk '{print \$NF}' | tr -d '\"' ", returnStdout: true).trim()
                     currentBuild.displayName = "${BUILD_NUMBER}_${COMMIT}_${APP_VERSION}"
                 }
             }
