@@ -90,7 +90,7 @@ main_component = {
         },
         {
           "name": "base_image",
-          "value": "rust_for_gosh:0.1.0"
+          "value": "teamgosh/gosh-rust:1.71"
         },
         {
           "name": "prerun",
