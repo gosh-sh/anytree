@@ -1,0 +1,168 @@
+pipeline {
+    agent none
+
+    options {
+        timestamps ()
+    }
+    parameters {
+        gitParameter branchFilter: 'origin/(.*)', defaultValue: 'dev', name: 'sha1', type: 'PT_BRANCH', quickFilterEnabled: true
+        booleanParam name: 'DRYRUN', defaultValue: true, description: 'If enabled, will NOT publish pre-release artifacts.'
+        //booleanParam name: 'ONLY_IMAGES', defaultValue: false, description: 'If enabled, will only build and push images.'
+    }
+
+    stages {
+        stage('Clone repository') {
+            agent {
+                docker {
+                    image 'jenkins-docker-agent:1'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -v /opt:/opt --group-add docker'
+                }
+            }
+            steps {
+                script {
+                    if (env.ghprbPullLink) {
+                        env.COMMIT = env.ghprbSourceBranch
+                    } else {
+                        env.COMMIT = params.sha1
+                    }
+                }
+                echo "${COMMIT}"
+                git branch: "${COMMIT}", url: 'https://github.com/gosh-sh/anytree.git'
+                checkout scm
+                script {
+                    env.APP_VERSION = sh(script: " grep -m1 version gosh/Cargo.toml | awk '{print \$NF}' | tr -d '\"' ", returnStdout: true).trim()
+                    currentBuild.displayName = "${BUILD_NUMBER}_${COMMIT}_${APP_VERSION}"
+                }
+            }
+        }
+        stage('Build: Anytree') {
+            agent {
+                node {
+                    label 'jenkins-main'
+                }
+            }
+            steps {
+                buildGoshCli()
+            }
+        }
+
+        stage('Build: Prepare archives') {
+            agent {
+                node {
+                    label 'jenkins-main'
+                }
+            }
+            steps {
+                archiveAzureArtifacts()
+            }
+        }
+
+        stage('Prerelease: Anytree | binaries') {
+            agent {
+                docker {
+                    image 'jenkins-docker-agent:1'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -v /opt:/opt --group-add docker -v /root/jenkins-main/workspace:/tmp'
+                }
+            }
+            steps {
+                prereleaseBinaries()
+            }
+        }
+
+        /*stage('Prerelease: Images | Docker Image') {
+            agent {
+                node {
+                    label 'jenkins-main'
+                }
+            }
+            steps {
+                retry(3) {
+                    prereleaseToolsDeliveryImage()
+                }
+            }
+        }*/
+
+    }
+    post { 
+        always { 
+            node('jenkins-main') { 
+                cleanWs()
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////FUNCTIONS//////////////////////////////////
+
+// BUILD
+def buildGoshCli() {
+    script {
+        if (!params.ONLY_IMAGES) {
+            dir('gosh') {
+                sh '''
+                    #!/bin/bash
+                    set -ex
+                    
+                    # 3 = gosh
+                    PIPELINE_3_ID=$(az pipelines build queue --definition-id 3 --branch \${COMMIT} --project gosh | jq .id)
+                    PIPELINE_3_STATUS=inProgress
+
+                    until [ \$PIPELINE_3_STATUS = "completed" ]
+                    do
+                        sleep 60
+                        PIPELINE_3_STATUS=$(az pipelines build show --project gosh --id $PIPELINE_3_ID | jq .status | tr -d '\"')
+                    done
+
+                    cd ${WORKSPACE}
+                    rm -rf linux-*
+
+                    az pipelines runs artifact download --project gosh --artifact-name linux-amd64 --run-id $PIPELINE_3_ID --path linux-amd64 && sleep 2
+                    az pipelines runs artifact download --project gosh --artifact-name linux-arm64 --run-id $PIPELINE_3_ID --path linux-arm64 && sleep 2
+                '''
+            }
+        }
+    }
+}
+
+def archiveAzureArtifacts() {
+    script {
+        if (!params.ONLY_IMAGES) {
+            sh '''
+                #!/bin/bash
+                set -ex
+
+                rm -rf gosh-*.tar.gz
+                chmod +x linux-a*/*
+
+                tar -czvf gosh-linux-amd64.tar.gz -C linux-amd64 $(ls -A linux-amd64)
+                tar -czvf gosh-linux-arm64.tar.gz -C linux-arm64 $(ls -A linux-arm64)
+            '''
+        }
+    }
+}
+
+def prereleaseBinaries() {
+    script {
+        if (!params.DRYRUN && !params.ONLY_IMAGES) {
+            dir('.ci/scripts') {
+                withCredentials([string(credentialsId: 'github-gosh-release', variable: 'TOKEN')]) {
+                    sh './create-github-release.sh $TOKEN ${APP_VERSION} ${COMMIT}'
+                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/gosh-linux-amd64.tar.gz application/gzip'
+                    sh './github-upload-assets.sh $TOKEN ${APP_VERSION} /tmp/${JOB_NAME}/gosh-linux-arm64.tar.gz application/gzip'
+                }
+            }
+        }
+    }
+}
+
+/*def prereleaseToolsDeliveryImage() {
+    script {
+        if (!params.DRYRUN) {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'teamgosh-dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                sh 'docker login -u $USERNAME -p $PASSWORD'
+            }
+            sh """PATH=$HOME/.cargo/bin:$PATH && make gosh-ubuntu-release && make gosh-rust-release && make gosh-golang-release"""
+        }
+    }
+}*/

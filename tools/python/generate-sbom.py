@@ -14,7 +14,7 @@ TMP_FILE_PATH = os.path.abspath('tmp_file')
 SBOM_OUTPUT_PATH = 'sbom.json'
 PROJECT_URL= 'https://github.com/gosh-sh/gosh.git'
 PROJECT_COMMIT= '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
-PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh'
+PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh' # if Cargo project is not in the repository 
 
 # Load Cargo.lock
 with open(CARGO_LOCK_PATH) as f:
@@ -46,7 +46,7 @@ else:
                 {
                     "vendor": "GOSH",
                     "name": "anytree",
-                    "version": "0.0.0"
+                    "version": "0.1.0"
                 }
             ],
             "component": {
