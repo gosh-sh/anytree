@@ -60,14 +60,14 @@ def parse_args():
         '--project-commit',
         dest='project_commit',
         default=None,
-        help="Commit of the project. Default - commit parsed with 'git rev-parse HEAD' command in current dir."
+        help="Commit of the project. Default - commit parsed with 'git rev-parse HEAD' command in dir where Cargo.lock is located."
     )
     
     parser.add_argument(
         '--project-url',
         dest='project_url',
         default=None,
-        help="URL of the project's repository. Default - project URL parsed with 'git config --get remote.origin.url' command in current dir."
+        help="URL of the project's repository. Default - project URL parsed with 'git config --get remote.origin.url' command in dir where Cargo.lock is located."
     )
     
     args = parser.parse_args()
