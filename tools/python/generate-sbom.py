@@ -8,10 +8,6 @@ import json
 import subprocess
 from urllib.parse import urlparse
 
-import argparse
-import os
-import subprocess
-
 def get_current_commit(cargo_lock_dir):
     return subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=cargo_lock_dir).decode('utf-8').strip()
 
@@ -39,7 +35,7 @@ def parse_args():
         '--initial-sbom',
         dest='initial_sbom_path',
         default='initial-sbom.json',
-        help="Path to initial SBOM JSON file if need to append existing SBOM. Default - initial-sbom.json. Will ignore if file doesn't exist."
+        help="Optional. Path to initial SBOM JSON file if need to append existing SBOM. Default - initial-sbom.json. Will ignore if file doesn't exist."
     )
     
     parser.add_argument(
@@ -107,17 +103,6 @@ if __name__ == '__main__':
     print(f"PROJECT_SRC_PATH: {PROJECT_SRC_PATH}")
     print(f"=================================================================")
 
-
-
-
-# CARGO_LOCK_PATH = 'Cargo.lock'
-# CARGO_TOML_PATH = 'Cargo.toml'
-# INITIAL_SBOM_PATH = 'initial-sbom.json' # if need to append 
-# TMP_FILE_PATH = os.path.abspath('tmp_file')
-# SBOM_OUTPUT_PATH = 'sbom.json'
-# PROJECT_URL= 'https://github.com/gosh-sh/gosh.git'
-# PROJECT_COMMIT= '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
-# PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh' # if Cargo project is not in the repository 
 
 # Load Cargo.lock
 with open(CARGO_LOCK_PATH) as f:
