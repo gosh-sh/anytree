@@ -107,6 +107,7 @@ pub fn build(
     if let Some(base) = base_image {
         docker_cmd.arg(base);
     } else {
+        // TODO: remove default image it MUST be specified in SBOM with hashes
         docker_cmd.arg(CONTAINER_BASE);
     }
     docker_cmd.arg("sh").arg("-c");
