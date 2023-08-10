@@ -8,52 +8,107 @@ import json
 import subprocess
 from urllib.parse import urlparse
 
-# Get the current Git repository URL using subprocess
-def get_current_repo_url():
-    try:
-        result = subprocess.run(['git', 'config', '--get', 'remote.origin.url'], stdout=subprocess.PIPE, text=True, check=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
+import argparse
+import os
+import subprocess
 
-# Get the current Git commit hash using subprocess
-def get_current_commit():
-    try:
-        result = subprocess.run(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE, text=True, check=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
+def get_current_commit(cargo_lock_dir):
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=cargo_lock_dir).decode('utf-8').strip()
 
-parser = argparse.ArgumentParser(description="Generate software bill of materials (SBOM) for Rust project")
-parser.add_argument('--cargo-lock', dest='cargo_lock_path', default='./Cargo.lock', help="Path to Cargo.lock file. Default - ./Cargo.lock")
-parser.add_argument('--cargo-toml', dest='cargo_toml_path', default='./Cargo.toml', help="Path to Cargo.toml file. Default - ./Cargo.toml")
-parser.add_argument('--initial-sbom', dest='initial_sbom_path', default='initial-sbom.json', help="Path to initial SBOM JSON file if need to append existing SBOM. Default - initial-sbom.json. Will ignore if file doesn't exist.")
-parser.add_argument('--sbom-output', dest='sbom_output_path', default='sbom.json', help="Path to output SBOM JSON file. Default - sbom.json")
-parser.add_argument('--project-commit', dest='project_commit', default=get_current_commit(), help="Commit of the project. Default - commit parsed with 'git rev-parse HEAD' command in current dir.")
-parser.add_argument('--project-url', dest='project_url', default=get_current_repo_url(), help="URL of the project's repository. Default - project url parsed with 'git config --get remote.origin.url' command in current dir.")
-parser.add_argument('--project-src', dest='project_src_path', default='./', help="Path to the Rust project source if not root directory.")
+def get_current_repo_url(cargo_lock_dir):
+    return subprocess.check_output(['git', 'config', '--get', 'remote.origin.url'], cwd=cargo_lock_dir).decode('utf-8').strip()
 
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate software bill of materials (SBOM) for Rust project")
+    
+    parser.add_argument(
+        '--cargo-lock',
+        dest='cargo_lock_path',
+        default='./Cargo.lock',
+        help="Path to Cargo.lock file. Default - ./Cargo.lock"
+    )
+    
+    parser.add_argument(
+        '--cargo-toml',
+        dest='cargo_toml_path',
+        default='./Cargo.toml',
+        help="Path to Cargo.toml file. Default - ./Cargo.toml"
+    )
+    
+    parser.add_argument(
+        '--initial-sbom',
+        dest='initial_sbom_path',
+        default='initial-sbom.json',
+        help="Path to initial SBOM JSON file if need to append existing SBOM. Default - initial-sbom.json. Will ignore if file doesn't exist."
+    )
+    
+    parser.add_argument(
+        '--sbom-output',
+        dest='sbom_output_path',
+        default='sbom.json',
+        help="Path to output SBOM JSON file. Default - sbom.json"
+    )
+    
+    parser.add_argument(
+        '--project-src',
+        dest='project_src_path',
+        default='./',
+        help="Path to the Rust project source if not in root git directory. Not relates to local file system path. Relates to path inside repo structure. For example we can use v5_x/v5.1.0/git-remote-gosh which means https://github.com/gosh-sh/gosh/v5_x/v5.1.0/git-remote-gosh"
+    )
+    
+    parser.add_argument(
+        '--project-commit',
+        dest='project_commit',
+        default=None,
+        help="Commit of the project. Default - commit parsed with 'git rev-parse HEAD' command in current dir."
+    )
+    
+    parser.add_argument(
+        '--project-url',
+        dest='project_url',
+        default=None,
+        help="URL of the project's repository. Default - project URL parsed with 'git config --get remote.origin.url' command in current dir."
+    )
+    
+    args = parser.parse_args()
 
-CARGO_LOCK_PATH = args.cargo_lock_path
-CARGO_TOML_PATH = args.cargo_toml_path
-INITIAL_SBOM_PATH = args.initial_sbom_path
-SBOM_OUTPUT_PATH = args.sbom_output_path
-PROJECT_URL = args.project_url
-PROJECT_COMMIT = args.project_commit
-PROJECT_SRC_PATH = args.project_src_path
-TMP_FILE_PATH = os.path.abspath('tmp_file')
+    # Calculate the directory containing the Cargo.lock file
+    cargo_lock_dir = os.path.dirname(os.path.abspath(args.cargo_lock_path))
 
-print("Config:")
-print(f"=================================================================")
-print(f"CARGO_LOCK_PATH: {CARGO_LOCK_PATH}")
-print(f"CARGO_TOML_PATH: {CARGO_TOML_PATH}")
-print(f"INITIAL_SBOM_PATH: {INITIAL_SBOM_PATH}")
-print(f"SBOM_OUTPUT_PATH: {SBOM_OUTPUT_PATH}")
-print(f"PROJECT_URL: {PROJECT_URL}")
-print(f"PROJECT_COMMIT: {PROJECT_COMMIT}")
-print(f"PROJECT_SRC_PATH: {PROJECT_SRC_PATH}")
-print(f"=================================================================")
+    # Parse default values based on Cargo.lock directory
+    if args.project_commit is None:
+        args.project_commit = get_current_commit(cargo_lock_dir)
+
+    if args.project_url is None:
+        args.project_url = get_current_repo_url(cargo_lock_dir)
+
+    return args
+
+if __name__ == '__main__':
+    parsed_args = parse_args()
+    
+    CARGO_LOCK_PATH = parsed_args.cargo_lock_path
+    CARGO_TOML_PATH = parsed_args.cargo_toml_path
+    INITIAL_SBOM_PATH = parsed_args.initial_sbom_path
+    SBOM_OUTPUT_PATH = parsed_args.sbom_output_path
+    PROJECT_SRC_PATH = parsed_args.project_src_path
+    PROJECT_URL = parsed_args.project_url
+    PROJECT_COMMIT = parsed_args.project_commit
+    TMP_FILE_PATH = os.path.abspath('tmp_file')
+
+    print("Config:")
+    print(f"=================================================================")
+    print(f"CARGO_LOCK_PATH: {CARGO_LOCK_PATH}")
+    print(f"CARGO_TOML_PATH: {CARGO_TOML_PATH}")
+    print(f"INITIAL_SBOM_PATH: {INITIAL_SBOM_PATH}")
+    print(f"SBOM_OUTPUT_PATH: {SBOM_OUTPUT_PATH}")
+    print(f"PROJECT_URL: {PROJECT_URL}")
+    print(f"PROJECT_COMMIT: {PROJECT_COMMIT}")
+    print(f"PROJECT_SRC_PATH: {PROJECT_SRC_PATH}")
+    print(f"=================================================================")
+
+
+
 
 # CARGO_LOCK_PATH = 'Cargo.lock'
 # CARGO_TOML_PATH = 'Cargo.toml'
