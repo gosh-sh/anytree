@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import os
 import requests
@@ -7,14 +8,61 @@ import json
 import subprocess
 from urllib.parse import urlparse
 
-CARGO_LOCK_PATH = 'Cargo.lock'
-CARGO_TOML_PATH = 'Cargo.toml'
-INITIAL_SBOM_PATH = 'initial-sbom.json' # if need to append 
+# Get the current Git repository URL using subprocess
+def get_current_repo_url():
+    try:
+        result = subprocess.run(['git', 'config', '--get', 'remote.origin.url'], stdout=subprocess.PIPE, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
+
+# Get the current Git commit hash using subprocess
+def get_current_commit():
+    try:
+        result = subprocess.run(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
+
+parser = argparse.ArgumentParser(description="Generate software bill of materials (SBOM) for Rust project")
+parser.add_argument('--cargo-lock', dest='cargo_lock_path', default='./Cargo.lock', help="Path to Cargo.lock file. Default - ./Cargo.lock")
+parser.add_argument('--cargo-toml', dest='cargo_toml_path', default='./Cargo.toml', help="Path to Cargo.toml file. Default - ./Cargo.toml")
+parser.add_argument('--initial-sbom', dest='initial_sbom_path', default='initial-sbom.json', help="Path to initial SBOM JSON file if need to append existing SBOM. Default - initial-sbom.json. Will ignore if file doesn't exist.")
+parser.add_argument('--sbom-output', dest='sbom_output_path', default='sbom.json', help="Path to output SBOM JSON file. Default - sbom.json")
+parser.add_argument('--project-commit', dest='project_commit', default=get_current_commit(), help="Commit of the project. Default - commit parsed with 'git rev-parse HEAD' command in current dir.")
+parser.add_argument('--project-url', dest='project_url', default=get_current_repo_url(), help="URL of the project's repository. Default - project url parsed with 'git config --get remote.origin.url' command in current dir.")
+parser.add_argument('--project-src', dest='project_src_path', default='./', help="Path to the Rust project source if not root directory.")
+
+args = parser.parse_args()
+
+CARGO_LOCK_PATH = args.cargo_lock_path
+CARGO_TOML_PATH = args.cargo_toml_path
+INITIAL_SBOM_PATH = args.initial_sbom_path
+SBOM_OUTPUT_PATH = args.sbom_output_path
+PROJECT_URL = args.project_url
+PROJECT_COMMIT = args.project_commit
+PROJECT_SRC_PATH = args.project_src_path
 TMP_FILE_PATH = os.path.abspath('tmp_file')
-SBOM_OUTPUT_PATH = 'sbom.json'
-PROJECT_URL= 'https://github.com/gosh-sh/gosh.git'
-PROJECT_COMMIT= '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
-PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh' # if Cargo project is not in the repository 
+
+print("Config:")
+print(f"=================================================================")
+print(f"CARGO_LOCK_PATH: {CARGO_LOCK_PATH}")
+print(f"CARGO_TOML_PATH: {CARGO_TOML_PATH}")
+print(f"INITIAL_SBOM_PATH: {INITIAL_SBOM_PATH}")
+print(f"SBOM_OUTPUT_PATH: {SBOM_OUTPUT_PATH}")
+print(f"PROJECT_URL: {PROJECT_URL}")
+print(f"PROJECT_COMMIT: {PROJECT_COMMIT}")
+print(f"PROJECT_SRC_PATH: {PROJECT_SRC_PATH}")
+print(f"=================================================================")
+
+# CARGO_LOCK_PATH = 'Cargo.lock'
+# CARGO_TOML_PATH = 'Cargo.toml'
+# INITIAL_SBOM_PATH = 'initial-sbom.json' # if need to append 
+# TMP_FILE_PATH = os.path.abspath('tmp_file')
+# SBOM_OUTPUT_PATH = 'sbom.json'
+# PROJECT_URL= 'https://github.com/gosh-sh/gosh.git'
+# PROJECT_COMMIT= '08d9325d8df759ca833a60a66fcc6b2b8c060a87'
+# PROJECT_SRC_PATH= 'v5_x/v5.1.0/git-remote-gosh' # if Cargo project is not in the repository 
 
 # Load Cargo.lock
 with open(CARGO_LOCK_PATH) as f:
@@ -46,7 +94,7 @@ else:
                 {
                     "vendor": "GOSH",
                     "name": "anytree",
-                    "version": "0.1.0"
+                    "version": "1.0.0"
                 }
             ],
             "component": {
