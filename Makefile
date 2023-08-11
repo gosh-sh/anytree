@@ -20,6 +20,10 @@ fix:
 run:
 	cargo run --bin anytree -- build "./hack/cargo_sbom.cdx.json"
 
+.PHONY: run-mac
+run-mac:
+	cargo run --bin anytree -- build "./hack/cargo_sbom_mac.cdx.json"
+
 .PHONY: debug_run
 debug_run:
 	ANYTREE_LOG=trace cargo run --bin anytree -- build "./hack/cargo_sbom.cdx.json"
