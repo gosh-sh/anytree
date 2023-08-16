@@ -1,6 +1,6 @@
 {
     "bomFormat": "CycloneDX",
-    "specVersion": "1.5",
+    "specVersion": "1.4",
     "version": 1,
     "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
     "metadata": {
@@ -17,7 +17,7 @@
             "properties": [
                 {
                     "name": "platform",
-                    "value": "linux"
+                    "value": "macos"
                 }
             ]
         }

@@ -17,7 +17,16 @@ fn main() {
 }
 
 fn run() -> anyhow::Result<()> {
-    let cli = Cli::try_parse()?;
+    let cli = match Cli::try_parse() {
+        Ok(cli) => cli,
+        Err(e) => {
+            if e.to_string().starts_with("Usage") {
+                eprintln!("{e}");
+                return Ok(())
+            }
+            anyhow::bail!(e);
+        }
+    };
 
     match cli.command {
         Commands::Build { sbom, dir } => {
