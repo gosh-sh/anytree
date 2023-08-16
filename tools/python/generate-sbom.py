@@ -82,11 +82,35 @@ def parse_args():
 
 if __name__ == '__main__':
     parsed_args = parse_args()
+
+    # Use the current directory as the base for relative paths
+    current_directory = os.getcwd()
+
+    # Check if the provided paths are relative or absolute
+    if not os.path.isabs(parsed_args.cargo_lock_path):
+        # If relative, join with the current directory
+        CARGO_LOCK_PATH = os.path.join(current_directory, parsed_args.cargo_lock_path)
+    else:
+        CARGO_LOCK_PATH = parsed_args.cargo_lock_path
+
+    if not os.path.isabs(parsed_args.cargo_toml_path):
+        # If relative, join with the current directory
+        CARGO_TOML_PATH = os.path.join(current_directory, parsed_args.cargo_toml_path)
+    else:
+        CARGO_TOML_PATH = parsed_args.cargo_toml_path
+
+    # Check and handle INITIAL_SBOM_PATH
+    if not os.path.isabs(parsed_args.initial_sbom_path):
+        INITIAL_SBOM_PATH = os.path.join(current_directory, parsed_args.initial_sbom_path)
+    else:
+        INITIAL_SBOM_PATH = parsed_args.initial_sbom_path
+
+    # Check and handle SBOM_OUTPUT_PATH
+    if not os.path.isabs(parsed_args.sbom_output_path):
+        SBOM_OUTPUT_PATH = os.path.join(current_directory, parsed_args.sbom_output_path)
+    else:
+        SBOM_OUTPUT_PATH = parsed_args.sbom_output_path
     
-    CARGO_LOCK_PATH = parsed_args.cargo_lock_path
-    CARGO_TOML_PATH = parsed_args.cargo_toml_path
-    INITIAL_SBOM_PATH = parsed_args.initial_sbom_path
-    SBOM_OUTPUT_PATH = parsed_args.sbom_output_path
     PROJECT_SRC_PATH = parsed_args.project_src_path
     PROJECT_URL = parsed_args.project_url
     PROJECT_COMMIT = parsed_args.project_commit

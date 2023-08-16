@@ -70,6 +70,10 @@ fi
 DEFAULT_PATH=$HOME/.gosh/
 BINARY_PATH="${BINARY_PATH:-$DEFAULT_PATH}"
 
+if [ ! -d $BINARY_PATH ]; then
+  mkdir -p $BINARY_PATH
+fi
+
 # Move the contents from the temporary directory to the desired installation path
 mv $TEMP_DIR/$BIN_NAME $BINARY_PATH
 
