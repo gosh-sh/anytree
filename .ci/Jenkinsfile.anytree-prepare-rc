@@ -42,7 +42,7 @@ pipeline {
                 }
             }
             steps {
-                buildGoshCli()
+                azureBuild()
             }
         }
 
@@ -68,41 +68,27 @@ pipeline {
                 prereleaseBinaries()
             }
         }
-
-        /*stage('Prerelease: Images | Docker Image') {
-            agent {
-                node {
-                    label 'jenkins-main'
-                }
-            }
-            steps {
-                retry(3) {
-                    prereleaseToolsDeliveryImage()
-                }
-            }
-        }*/
-
     }
-    post { 
-        always { 
-            node('jenkins-main') { 
+    post {
+        always {
+            node('jenkins-main') {
                 cleanWs()
             }
         }
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 ///////////////////////FUNCTIONS//////////////////////////////////
 
 // BUILD
-def buildGoshCli() {
+def azureBuild() {
     script {
         if (!params.ONLY_IMAGES) {
             sh '''
                 #!/bin/bash
                 set -ex
-                
+
                 # 4 = gosh
                 PIPELINE_4_ID=$(az pipelines build queue --definition-id 4 --branch \${COMMIT} --project gosh | jq .id)
                 PIPELINE_4_STATUS=inProgress
@@ -153,14 +139,3 @@ def prereleaseBinaries() {
         }
     }
 }
-
-/*def prereleaseToolsDeliveryImage() {
-    script {
-        if (!params.DRYRUN) {
-            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'teamgosh-dockerhub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                sh 'docker login -u $USERNAME -p $PASSWORD'
-            }
-            sh """PATH=$HOME/.cargo/bin:$PATH && make gosh-ubuntu-release && make gosh-rust-release && make gosh-golang-release"""
-        }
-    }
-}*/
