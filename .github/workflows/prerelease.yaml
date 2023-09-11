@@ -1,0 +1,145 @@
+name: Prerelease
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0  # important for cache size too
+  CARGO_NET_RETRY: 10
+  RUST_BACKTRACE: full
+  RUSTUP_MAX_RETRIES: 10
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
+  CARGO_PROFILE_RELEASE_LTO: true
+  CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER: x86_64-linux-gnu-gcc
+  CC_x86_64_unknown_linux_gnu: x86_64-linux-gnu-gcc
+  CXX_x86_64_unknown_linux_gnu: x86_64-linux-gnu-g++
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+  CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+  CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
+  RUSTFLAGS: -C target-feature=+crt-static
+
+jobs:
+  build:
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        name:
+          - anytree-darwin-arm64
+          - anytree-darwin-amd64
+          - anytree-linux-arm64
+          - anytree-linux-amd64
+        include:
+          ## name
+          - name: anytree-darwin-arm64
+            os: macos-12
+            target: aarch64-apple-darwin
+          - name: anytree-darwin-amd64
+            os: macos-12
+            target: x86_64-apple-darwin
+          - name: anytree-linux-arm64
+            os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+          - name: anytree-linux-amd64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          # - name: anytree-windows-amd64
+          #   os: windows-2019
+          #   target: x86_64-pc-windows-msvc
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set VERSION
+        id: version
+        run: |
+          echo "VERSION=$(cat version.json | jq -r .version)" >> "$GITHUB_OUTPUT"
+
+      # Cache
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ matrix.name }}-target
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Add cross compile Linux tools
+        if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross gcc-aarch64-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        ## NOTE: workaround rate-limit
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Binary target/${{ matrix.target }}/release/anytree
+        run: |
+          cargo build --release --target=${{ matrix.target }}
+          ls -lA target/${{ matrix.target }}/release
+
+      - name: Artifact ${{ matrix.name }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/${{ matrix.target }}/release/anytree
+          name: ${{ matrix.name }}
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+
+  release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        name:
+          - anytree-darwin-arm64
+          - anytree-darwin-amd64
+          - anytree-linux-arm64
+          - anytree-linux-amd64
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Make archive
+        run: |
+          chmod +x ${{ matrix.name }}/anytree
+          tar -czvf ${{ matrix.name }}.tar.gz -C ${{ matrix.name }} .
+
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: |
+            ${{ matrix.name }}.tar.gz
+          tag_name: rc-${{ needs.build.outputs.version || 'no-version' }}-${{ github.ref_name }}-${{ github.run_number }}
