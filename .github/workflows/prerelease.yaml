@@ -107,7 +107,9 @@ jobs:
       - name: Artifact ${{ matrix.name }}
         uses: actions/upload-artifact@v3
         with:
-          path: target/${{ matrix.target }}/release/anytree
+          path: |
+            target/${{ matrix.target }}/release/anytree
+            target/${{ matrix.target }}/release/anytree-plugin-cargo-dependencies
           name: ${{ matrix.name }}
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -133,7 +135,7 @@ jobs:
 
       - name: Make archive
         run: |
-          chmod +x ${{ matrix.name }}/anytree
+          chmod +x ${{ matrix.name }}/anytree*
           tar -czvf ${{ matrix.name }}.tar.gz -C ${{ matrix.name }} .
 
       - name: Publish
