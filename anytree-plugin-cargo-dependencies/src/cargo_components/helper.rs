@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::hash::{Hash, Hasher, SipHasher};
+#[allow(deprecated)]
+use std::hash::SipHasher;
+use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::Path;
 
@@ -104,6 +106,7 @@ pub enum SourceKind {
 // dir suffix
 pub fn get_suffix_hash(url: &str, kind: Option<SourceKind>) -> String {
     // NOTE: SipHasher is deprecated, but cargo seems to check this hash !!!!
+    #[allow(deprecated)]
     let mut hasher = SipHasher::new();
     if let Some(kind) = kind {
         kind.hash(&mut hasher);

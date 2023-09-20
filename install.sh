@@ -2,9 +2,10 @@
 
 set -e
 
-REPO_OWNER=gosh-sh
-REPO=anytree
-BIN_NAME=anytree
+: "${REPO_OWNER:=gosh-sh}"
+: "${REPO:=anytree}"
+: "${BIN_NAME:=anytree}"
+
 if [[ -z "${TAG}" ]]; then
   echo ""
   echo "Downloading latest release of GOSH Anytree"
