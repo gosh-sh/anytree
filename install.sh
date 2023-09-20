@@ -19,29 +19,38 @@ else
 fi
 
 # Check OS and architecture
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    if [[ $(uname -m) == "x86_64" ]]; then
-        TAR="$BIN_NAME-linux-amd64.tar.gz"
-    else
-        TAR="$BIN_NAME-linux-arm64.tar.gz"
-    fi
-else
-    echo "Only \"Linux\" is supported - not \"$OSTYPE\""
+case "$OSTYPE" in
+  "linux"*)
+    case "$(uname -m)" in
+      "x86_64") TAR="$BIN_NAME"-linux-amd64.tar.gz ;;
+      *)        TAR="$BIN_NAME"-linux-arm64.tar.gz ;;
+    esac
+    ;;
+  "darwin"*)
+    case "$(uname -m)" in
+      "x86_64") TAR="$BIN_NAME"-darwin-amd64.tar.gz ;;
+      *)        TAR="$BIN_NAME"-darwin-arm64.tar.gz ;;
+    esac
+    ;;
+  *)
+    echo "Only \"Linux\" and \"Darwin\" are supported"
     exit 1
-fi
+    ;;
+esac
+
 
 OLD_TAR="${TAR%.*}"
 TEMP_DIR="gosh_tmp"
-[ -f $TAR ] && rm $TAR
-[ -d $OLD_TAR ] && rm -r $OLD_TAR
-[ -d $TEMP_DIR ] && rm -r $TEMP_DIR
+[[ -f $TAR ]] && rm "$TAR"
+[[ -d $OLD_TAR ]] && rm -r "$OLD_TAR"
+[[ -d $TEMP_DIR ]] && rm -r "$TEMP_DIR"
 
 GH_API="https://api.github.com"
 GH_REPO="$GH_API/repos/${REPO_OWNER}/${REPO}"
 GH_TAGS="$GH_REPO/releases/$TAG"
 
 # Read asset tags.
-response=$(curl -s "$GH_TAGS")
+response=$(wget -qO- "$GH_TAGS")
 
 # Get ID of the asset based on the given name.
 eval $(echo "$response" | grep -C3 "name.:.\+$TAR" | grep -w id | tr : = | tr -cd '[[:alnum:]]=')
@@ -61,22 +70,20 @@ mkdir $TEMP_DIR
 
 # Unpack the downloaded tar archive to the temporary directory
 if [[ -z "${OLD}" ]]; then
-  tar -xvzf $TAR -C $TEMP_DIR
-  rm -f $TAR
+  tar -xvzf "$TAR" -C $TEMP_DIR
+  rm -f "$TAR"
 else
-  tar -xf $OLD_TAR -C $TEMP_DIR
-  rm -f $OLD_TAR
+  tar -xf "$OLD_TAR" -C $TEMP_DIR
+  rm -f "$OLD_TAR"
 fi
 
 DEFAULT_PATH=$HOME/.gosh/
 BINARY_PATH="${BINARY_PATH:-$DEFAULT_PATH}"
 
-if [ ! -d $BINARY_PATH ]; then
-  mkdir -p $BINARY_PATH
-fi
+mkdir -p "$BINARY_PATH"
 
 # Move the contents from the temporary directory to the desired installation path
-mv $TEMP_DIR/$BIN_NAME $BINARY_PATH
+mv $TEMP_DIR/"$BIN_NAME" "$BINARY_PATH"
 
 echo ""
 echo "Binary was installed to $BINARY_PATH"
