@@ -22,7 +22,7 @@ fn run() -> anyhow::Result<()> {
         Err(e) => {
             if e.to_string().starts_with("Usage") {
                 eprintln!("{e}");
-                return Ok(())
+                return Ok(());
             }
             anyhow::bail!(e);
         }

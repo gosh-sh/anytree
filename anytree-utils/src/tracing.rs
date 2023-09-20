@@ -1,12 +1,12 @@
 use std::io::{BufRead, BufReader};
+
 use indicatif::ProgressStyle;
 use tracing::Span;
-use tracing_indicatif::IndicatifLayer;
 use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing_indicatif::IndicatifLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-
-use tracing_subscriber::{EnvFilter, Layer};
+use tracing_subscriber::EnvFilter;
 
 pub fn default_init() {
     let indicatif_layer = IndicatifLayer::new();
@@ -21,7 +21,7 @@ pub fn default_init() {
                             .with_ansi(true)
                             .with_thread_ids(true)
                             .with_source_location(false),
-                    )
+                    ),
             )
             .with(EnvFilter::new(directives))
             .with(indicatif_layer)
@@ -36,7 +36,7 @@ pub fn default_init() {
                             .with_ansi(true)
                             .with_thread_ids(true)
                             .with_source_location(false),
-                    )
+                    ),
             )
             .with(EnvFilter::new("info"))
             .with(indicatif_layer)

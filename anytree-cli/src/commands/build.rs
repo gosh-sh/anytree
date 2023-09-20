@@ -8,8 +8,9 @@ pub fn build(sbom_path: impl AsRef<Path>, cache: Option<impl AsRef<str>>) -> any
         serde_json::from_reader(File::open(sbom_path.as_ref())?)?;
 
     let container_name = if let Some(run_dir) = cache {
-        // TODO: remove container with such name if it is not running otherwise throw error
-        //docker ps -qf "name=anytree-builder-d5badd63-06bc-4db5-bfa4-165be65d4cde"
+        // TODO: remove container with such name if it is not running otherwise
+        // throw error docker ps -qf
+        // "name=anytree-builder-d5badd63-06bc-4db5-bfa4-165be65d4cde"
         run_dir.as_ref().to_string()
     } else {
         let container_uuid = Uuid::new_v4().to_string();
