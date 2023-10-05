@@ -25,13 +25,12 @@ pub fn name_to_index_path(crate_name: &str) -> String {
         1 => format!("1/{}", crate_name),
         2 => format!("2/{}", crate_name),
         3 => {
-            let mut first_char = crate_name.clone().to_string();
+            let mut first_char = crate_name.to_string();
             first_char.truncate(1);
             format!("3/{}/{}", first_char, crate_name)
         }
         _ => {
-            let mut header_iter =
-                crate_name.clone().as_bytes().chunks(2).map(String::from_utf8_lossy);
+            let mut header_iter = crate_name.as_bytes().chunks(2).map(String::from_utf8_lossy);
             format!(
                 "{}/{}/{}",
                 header_iter.next().unwrap(),

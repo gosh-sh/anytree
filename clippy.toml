@@ -18,7 +18,7 @@ disallowed-methods = [
     "std::env::temp_dir", # Use the tempdir crate instead  # There are many things that aren"t allowed on wasm,
     # but we cannot disable them all here (because of e.g. https://github.com/rust-lang/rust-clippy/issues/10406)
     # so we do that in `clipppy_wasm.toml` instead.
-    "std::thread::spawn",       # Use `std::thread::Builder` and name the thread
+    "std::thread::spawn", # Use `std::thread::Builder` and name the thread
     ## INFO: in anytree project we have to use this algo anyway
     # "sha1::Digest::new",        # SHA1 is cryptographically broken
     "std::panic::catch_unwind", # We compile with `panic = "abort"`
